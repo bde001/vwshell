@@ -170,6 +170,46 @@ object AppLauncher {
         } catch (_: Exception) { null }
     }
 
+    /** Пакет установлен и имеет хотя бы одну компоненту? */
+    fun isPackageInstalled(context: Context, pkg: String): Boolean = try {
+        context.packageManager.getPackageInfo(pkg, 0) != null
+    } catch (_: Exception) { false }
+
+    /**
+     * Навигация: прямой запуск Google Maps без промежуточного экрана выбора.
+     * Порядок: сохранённый выбор пользователя → Google Maps (явный пакет) → geo:-интент.
+     * Возвращает true только если запуск реально выполнен.
+     */
+    fun launchMapsDirect(context: Context, savedPkg: String?): Boolean {
+        if (savedPkg != null && launchPackage(context, savedPkg)) return true
+        if (launchPackage(context, GOOGLE_MAPS_PKG)) return true
+        // Fallback: geo:-интент — система сама найдёт обработчик карт (если он есть).
+        return launchIntentSafely(context, Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=")))
+    }
+
+    /** Открыть страницу установки приложения в магазине приложений (Play Market или OEM-магазин магнитолы). */
+    fun openInstallPage(context: Context, packageName: String): Boolean {
+        val uri = Uri.parse("market://details?id=$packageName")
+        if (launchIntentSafely(context, Intent(Intent.ACTION_VIEW, uri))) return true
+        return launchIntentSafely(context, Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+    }
+
+    /**
+     * Автомобиль: прямой запуск Car Scanner ELM OBD2 (free / pro), затем сохранённый выбор.
+     * Никаких фиктивных телеметрических экранов: если приложение не установлено — false.
+     */
+    fun launchCarScanner(context: Context, savedPkg: String?): Boolean {
+        if (savedPkg != null && launchPackage(context, savedPkg)) return true
+        if (launchPackage(context, CAR_SCANNER_FREE)) return true
+        return launchPackage(context, CAR_SCANNER_PRO)
+    }
+
+    private const val GOOGLE_MAPS_PKG = "com.google.android.apps.maps"
+    private const val CAR_SCANNER_FREE = "com.mgmadv.carscanner.elm.free"
+    private const val CAR_SCANNER_PRO = "com.mgmadv.carscanner.elm.pro"
+
     /**
      * Состояние Bluetooth: null — адаптера нет / нет доступа (BLUETOOTH_CONNECT не выдано);
      * иначе — включён ли адаптер. Только реально доступные данные.

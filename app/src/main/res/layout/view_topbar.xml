@@ -29,6 +29,7 @@
         android:textColor="@color/vw_text_secondary"
         android:textSize="@dimen/small_text"/>
 
+    <!-- modeText используется ТОЛЬКО как заголовок активного раздела; на главном экране пуст -->
     <TextView
         android:id="@+id/modeText"
         android:layout_width="0dp"
@@ -39,8 +40,7 @@
         android:textSize="@dimen/title_text"
         android:letterSpacing="0.06"
         android:singleLine="true"
-        android:ellipsize="end"
-        android:text="@string/app_name"/>
+        android:ellipsize="end"/>
 
     <ImageView
         android:id="@+id/iconBluetooth"

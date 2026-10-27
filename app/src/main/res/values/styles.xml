@@ -168,6 +168,14 @@
         <item name="android:textColor">@drawable/selector_nav_item</item>
     </style>
 
+    <!-- Пустая подготовленная ячейка сетки второй страницы (тонкая рамка, без контента) -->
+    <style name="VW.TileSlot" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_margin">@dimen/tile_gap</item>
+        <item name="android:background">@drawable/bg_tile_slot</item>
+    </style>
+
     <style name="VW.Tile" parent="">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>

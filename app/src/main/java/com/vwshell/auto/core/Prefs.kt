@@ -25,6 +25,16 @@ class Prefs private constructor(context: Context) {
         get() = sp.getString(KEY_PHONE, null)
         set(v) = sp.edit().putString(KEY_PHONE, v).apply()
 
+    /** Пакет приложения «Автомобиль» (по умолчанию Car Scanner ELM OBD2). */
+    var vehicleAppPackage: String?
+        get() = sp.getString(KEY_VEHICLE, DEFAULT_VEHICLE_PKG)
+        set(v) = sp.edit().putString(KEY_VEHICLE, v).apply()
+
+    /** Onboarding-подсказка «Сделать главным экраном» больше не показывать. */
+    var homeHintDismissed: Boolean
+        get() = sp.getBoolean(KEY_HOME_HINT, false)
+        set(v) = sp.edit().putBoolean(KEY_HOME_HINT, v).apply()
+
     /** Избранные FM-частоты (только сохранённые пользователем значения, без фиктивных данных). */
     fun favorites(): MutableSet<String> = HashSet(sp.getStringSet(KEY_FAV, emptySet()) ?: emptySet())
 
@@ -94,6 +104,11 @@ class Prefs private constructor(context: Context) {
         private const val KEY_MEDIA = "media_app"
         private const val KEY_RADIO = "radio_app"
         private const val KEY_PHONE = "phone_app"
+        private const val KEY_VEHICLE = "vehicle_app"
+        private const val KEY_HOME_HINT = "home_hint_dismissed"
+        /** Car Scanner ELM OBD2 (поддерживает VW/Audi, в т.ч. Golf IV BCB через ELM327). */
+        const val DEFAULT_VEHICLE_PKG = "com.mgmadv.carscanner.elm.free"
+        const val DEFAULT_VEHICLE_PKG_PRO = "com.mgmadv.carscanner.elm.pro"
         private const val KEY_FAV = "fm_favorites"
         private const val KEY_LAST_FREQ = "fm_last_freq"
 

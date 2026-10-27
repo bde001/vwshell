@@ -6,45 +6,46 @@
     android:background="@color/vw_background"
     android:fitsSystemWindows="false">
 
-    <!-- Домашний экран -->
+    <!-- Домашний экран: верхняя панель + две листаемые страницы 3x2 + индикатор из двух кружков -->
     <LinearLayout
         android:id="@+id/homeContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Верхняя панель -->
+        <!-- Верхняя панель (часы слева, статус справа; без надписи «Режим автомобиля») -->
         <include android:id="@+id/topBar" layout="@layout/view_topbar"/>
-        <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
+        <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line"
+            android:background="@drawable/accent_line"/>
 
-        <!-- Сетка плиток 4x2 -->
-        <GridLayout
-            android:id="@+id/tileGrid"
+        <!-- Две страницы главного меню, горизонтальный свайп -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_margin="@dimen/screen_padding"
-            android:columnCount="4"
-            android:rowCount="2">
+            android:layout_weight="1"/>
 
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tileRadio"   style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tileMedia"   style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tilePhone"   style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tileNav"     style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tileVehicle" style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tileSound"   style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tileApps"    style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-            <com.vwshell.auto.widget.VWTile android:id="@+id/tileSettings" style="@style/VW.Tile" android:layout_columnWeight="1" android:layout_rowWeight="1"/>
-        </GridLayout>
+        <!-- Индикатор страниц: ровно два кружка, активный — красный -->
+        <LinearLayout
+            android:id="@+id/pageDots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
 
-        <!-- Мини-плеер главного экрана (виден только при реальной активной медиасессии) -->
+            <View android:id="@+id/dot0"
+                android:layout_width="8dp" android:layout_height="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/page_dot_active"/>
+            <View android:id="@+id/dot1"
+                android:layout_width="8dp" android:layout_height="8dp"
+                android:background="@drawable/page_dot_inactive"/>
+        </LinearLayout>
+
+        <!-- Мини-плеер: виден только при реальной активной медиасессии -->
         <include android:id="@+id/miniPlayer" layout="@layout/view_mini_player"/>
-
-        <!-- Тонкий красный разделитель -->
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@drawable/accent_line" android:alpha="0.85"/>
-
-        <!-- Нижняя панель: источник + навигация по разделам -->
-        <include android:id="@+id/bottomBar" layout="@layout/view_bottombar"/>
     </LinearLayout>
 
     <!-- Контейнер разделов -->
@@ -53,5 +54,5 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/vw_background"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 </FrameLayout>
