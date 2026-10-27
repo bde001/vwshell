@@ -1,8 +1,8 @@
 package com.vwshell.auto
 
+import android.Manifest
 import android.app.role.RoleManager
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -13,10 +13,14 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -25,6 +29,8 @@ import com.vwshell.auto.core.KeyLogger
 import com.vwshell.auto.core.Prefs
 import com.vwshell.auto.core.ShellState
 import com.vwshell.auto.databinding.ActivityMainBinding
+import com.vwshell.auto.media.LocalPlayerEngine
+import com.vwshell.auto.ui.BaseSectionFragment
 import com.vwshell.auto.ui.MediaFragment
 import com.vwshell.auto.ui.PhoneFragment
 import com.vwshell.auto.ui.RadioFragment
@@ -35,21 +41,47 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * VW Shell — оболочка в стиле Volkswagen Discover Pro.
- * Полноэкранный HOME-режим: без статус-бара и панели навигации, системные жесты
- * остаются рабочими (BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE).
+ * VW Shell — оболочка в стиле Volkswagen Discover Pro (Android 10–13).
  *
- * Главный экран: две горизонтально листаемые страницы (ViewPager2), каждая — сетка ровно 3x2.
- * Под сеткой — индикатор из двух кружков (активный красный #E3182D). Нижней панели нет.
+ * Полноэкранный HOME-режим: системные панели скрыты, жесты не перехвачены.
+ * Главный экран: ровно две листаемые страницы (ViewPager2), каждая — сетка 3x2;
+ * под сеткой — два кружка-индикатора (активный красный #E3182D). Нижней панели нет.
  *
  * Навигация: openSection() открывает ФАКТИЧЕСКИ переданный Fragment через replace()
- * с тегом = имя класса; повторное нажатие не создаёт дубликат. showHome() удаляет раздел.
- * Back возвращает домой; на главном экране событие отдаётся системе.
+ * с тегом = имя класса (исправление дефекта с EmptyFragment); showHome() удаляет раздел;
+ * Back возвращает домой, на главном экране событие отдаётся системе.
  */
 class MainActivity : AppCompatActivity(), ShellState.Listener {
 
+    /** Маркер: фрагмент является разделом оболочки (для восстановления после пересоздания Activity). */
+    interface BaseSectionMarker
+
+    /** Хост обновления часов шапки раздела по системному событию TIME_TICK. */
+    interface BaseSectionHeaderClockHolder {
+        fun onSectionRestored(tag: String, @StringRes titleRes: Int)
+    }
+
     private lateinit var binding: ActivityMainBinding
     private var lastClockText: String? = null
+    private var currentSectionTag: String? = null
+    private var receiverRegistered = false
+    private val transportBoundMarker = Any()
+
+    private val timeTickReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            updateClock()
+            sectionFragments().forEach { it.refreshClock() }
+        }
+    }
+
+    /** Запрос READ_MEDIA_AUDIO (Android 13) / READ_EXTERNAL_STORAGE (10–11) из плеера MediaFragment. */
+    private val audioPermLauncher: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            (sectionFragments().firstOrNull { it is MediaFragment } as? MediaFragment)
+                ?.onAudioPermissionResult(granted)
+        }
+
+    // ==================== Life cycle ====================
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,22 +89,50 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
         setContentView(binding.root)
         setupFullscreen()
         setupPager()
+        ShellState.load(this)
         ShellState.init(this)
         ShellState.addListener(this, this)
 
+        binding.topBar.modeText.text = "" // на главном экране заголовок раздела пуст
+
         // Восстановление после поворота/пробуждения: FragmentManager сам восстановит
         // фрагмент раздела; BaseSectionFragment.onViewCreated вызовет onSectionRestored().
-        if (!hasRestoredSection()) showHome(silent = true)
+        if (!hasRestoredSection()) showHome(silent = true) else syncMiniPlayer()
         updateClock(force = true)
         updateStatusIcons()
         maybeShowHomeHint()
     }
 
-    /** Есть ли восстановленный раздел после пересоздания Activity. */
+    override fun onResume() {
+        super.onResume()
+        if (!receiverRegistered) {
+            ContextCompat.registerReceiver(this, timeTickReceiver,
+                IntentFilter(Intent.ACTION_TIME_TICK), ContextCompat.RECEIVER_NOT_EXPORTED)
+            receiverRegistered = true
+        }
+        updateClock(force = true)
+        updateStatusIcons()
+        ShellState.refresh()
+    }
+
+    override fun onPause() {
+        if (receiverRegistered) {
+            try { unregisterReceiver(timeTickReceiver) } catch (_: Exception) {}
+            receiverRegistered = false
+        }
+        ShellState.save(this)
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        ShellState.removeListener(this)
+        super.onDestroy()
+    }
+
     private fun hasRestoredSection(): Boolean =
         supportFragmentManager.findFragmentById(R.id.sectionContainer) is BaseSectionMarker
 
-    /** Полноэкранный OEM-режим; системные жесты не перехватываются. */
+    /** Полноэкранный OEM-режим; системные жесты и диалоги разрешений остаются рабочими. */
     private fun setupFullscreen() {
         window.setDecorFitsSystemWindows(false)
         val controller = window.insetsController
@@ -97,6 +157,29 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
             setupFullscreen()
             updateClock(force = true)
         }
+    }
+
+    // ==================== Часы (по системному TIME_TICK, без поллинга) ====================
+
+    private val clockFmt = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private val dateFmt = SimpleDateFormat("EEE, d MMM", Locale.getDefault())
+
+    private fun updateClock(force: Boolean = false) {
+        if (!::binding.isInitialized) return
+        val now = Date()
+        val t = clockFmt.format(now)
+        if (force || t != lastClockText) {
+            lastClockText = t
+            binding.topBar.clockText.text = t
+            binding.topBar.dateText.text = dateFmt.format(now)
+        }
+    }
+
+    /** Индикаторы статуса: только реально определяемые данные, иначе — скрыты. */
+    private fun updateStatusIcons() {
+        val bt = AppLauncher.bluetoothState(this)
+        binding.topBar.iconBluetooth.visibility = if (bt == true) View.VISIBLE else View.INVISIBLE
+        binding.topBar.iconSignal.visibility = View.GONE // сигнал сети без READ_PHONE_STATE недоступен — скрываем честно
     }
 
     // ==================== Страницы главного меню (2 x сетка 3x2) ====================
@@ -130,7 +213,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
             openSection(SettingsFragment::class.java, R.string.tile_settings) })
     )
 
-    /** Вторая страница: подготовленная структура для будущих плиток (пока пустые ячейки). */
+    /** Вторая страница: подготовленная структура для будущих плиток (пустые ячейки 3x2). */
     private fun pageTwoTiles(): List<TileSpec> = emptyList()
 
     private fun setupPager() {
@@ -141,7 +224,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
         updatePageDots(binding.pager.currentItem)
     }
 
-    /** Ровно два кружка: активный красный, неактивный серый. */
+    /** Ровно два кружка: активный красный #E3182D, неактивный серый. */
     private fun updatePageDots(active: Int) {
         binding.dot0.setBackgroundResource(
             if (active == 0) R.drawable.page_dot_active else R.drawable.page_dot_inactive)
@@ -184,8 +267,6 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
 
     // ==================== Навигация между разделами ====================
 
-    private var currentSectionTag: String? = null
-
     /** Открывает ФАКТИЧЕСКИ переданный фрагмент (исправление критического дефекта). */
     private fun openSection(cls: Class<out Fragment>, @StringRes titleRes: Int) {
         val tag = cls.name
@@ -204,14 +285,191 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
     fun showHome() = showHome(silent = false)
 
     private fun showHome(silent: Boolean) {
-        if (currentSectionTag != null || hasRestoredSection()) {
+        val f = supportFragmentManager.findFragmentById(R.id.sectionContainer)
+        if (f != null) {
             supportFragmentManager.beginTransaction()
                 .setCustomAnimations(0, if (silent) 0 else R.anim.vw_exit)
-                .remove/support_null_check
+                .remove(f)
+                .commit()
+        }
+        currentSectionTag = null
+        binding.sectionContainer.visibility = View.GONE
+        binding.homeContainer.visibility = View.VISIBLE
+        binding.topBar.modeText.text = ""
+    }
+
+    /** Вызывается из BaseSectionFragment.onViewCreated — синхронизирует chrome после восстановления. */
+    override fun onSectionRestored(tag: String, titleRes: Int) {
+        currentSectionTag = tag
+        binding.homeContainer.visibility = View.INVISIBLE
+        binding.sectionContainer.visibility = View.VISIBLE
+        binding.topBar.modeText.setText(titleRes)
+    }
+
+    private fun sectionFragments(): List<BaseSectionFragment> =
+        supportFragmentManager.fragments.filterIsInstance<BaseSectionFragment>()
+
+    override fun onBackPressed() {
+        if (currentSectionTag != null || hasRestoredSection()) showHome()
+        else @Suppress("DEPRECATION") super.onBackPressed() // на главном экране HOME-приложение не перехватывает Back
+    }
+
+    // ==================== Мини-плеер главного экрана ====================
+
+    override fun onMediaStateChanged(snap: ShellState.MediaSnapshot?) {
+        if (!::binding.isInitialized) return
+        syncMiniPlayer()
+    }
+
+    private fun syncMiniPlayer() {
+        val mini = binding.miniPlayer.root
+        val local = LocalPlayerEngine.peekOrNull(this)
+        val snap = ShellState.current
+        val playing = local?.isPlaying == true || (snap?.playing == true && snap.controller != null)
+        val title: String? = local?.currentItem?.displayTitle ?: snap?.title
+        val artist: String? = local?.currentItem?.displayArtist ?: snap?.artist
+
+        if (title == null && !playing) {
+            mini.visibility = View.GONE
+            return
+        }
+        mini.visibility = View.VISIBLE
+        mini.findViewById<TextView>(R.id.miniTitle).text = title ?: getString(R.string.media_track_unknown)
+        mini.findViewById<TextView>(R.id.miniArtist).text = artist ?: ""
+        val play = mini.findViewById<ImageButton>(R.id.btnMiniPlay)
+        play.setImageResource(if (playing) R.drawable.ic_pause else R.drawable.ic_play)
+        // Кнопки активны только если реальный источник объявил действия.
+        val canTransport = local?.hasPlaylist == true ||
+            (snap != null && (snap.canPlay() || snap.canPause()))
+        play.alpha = if (canTransport) 1f else 0.35f
+        mini.findViewById<View>(R.id.btnMiniPrev).alpha =
+            if (local?.hasPlaylist == true || snap?.canSkipPrev() == true) 1f else 0.35f
+        mini.findViewById<View>(R.id.btnMiniNext).alpha =
+            if (local?.hasPlaylist == true || snap?.canSkipNext() == true) 1f else 0.35f
+
+        if (mini.getTag() !== transportBoundMarker) {
+            mini.setTag(transportBoundMarker)
+            play.setOnClickListener { toggleTransport() }
+            mini.findViewById<View>(R.id.btnMiniPrev).setOnClickListener { skipTransport(next = false) }
+            mini.findViewById<View>(R.id.btnMiniNext).setOnClickListener { skipTransport(next = true) }
         }
     }
 
+    /** Приоритет: собственный локальный плеер; иначе — внешняя медиасессия (только объявленные действия). */
+    private fun toggleTransport() {
+        val local = LocalPlayerEngine.peekOrNull(this)
+        if (local != null && local.hasPlaylist) { local.togglePlayPause(); return }
+        val snap = ShellState.current
+        val c = snap?.controller ?: return
+        when {
+            snap.playing && snap.canPause() -> c.transportControls.pause()
+            !snap.playing && snap.canPlay() -> c.transportControls.play()
+            else -> Toast.makeText(this, R.string.media_action_unsupported, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun skipTransport(next: Boolean) {
+        val local = LocalPlayerEngine.peekOrNull(this)
+        if (local != null && local.hasPlaylist) { if (next) local.next() else local.previous(); return }
+        val snap = ShellState.current ?: return
+        val c = snap.controller ?: return
+        if (next) {
+            if (!snap.canSkipNext()) return unsupported()
+            c.transportControls.skipToNext()
+        } else {
+            if (!snap.canSkipPrev()) return unsupported()
+            c.transportControls.skipToPrevious()
+        }
+    }
+
+    private fun unsupported() =
+        Toast.makeText(this, R.string.media_action_unsupported, Toast.LENGTH_SHORT).show()
+
+    // ==================== Разрешения от имени MediaFragment ====================
+
+    fun requestAudioPermission() {
+        val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_AUDIO
+        else Manifest.permission.READ_EXTERNAL_STORAGE
+        audioPermLauncher.launch(perm)
+    }
+
+    fun hasAudioPermission(): Boolean {
+        val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_AUDIO
+        else Manifest.permission.READ_EXTERNAL_STORAGE
+        return ContextCompat.checkSelfPermission(this, perm) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+    }
+
+    // ==================== Launcher / ROLE_HOME ====================
+
+    /** Активна ли оболочка как домашний экран (проверяется реально, без догадок). */
+    private fun isDefaultHome(): Boolean {
+        val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        val resolved = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            packageManager.resolveActivity(home,
+                android.content.pm.PackageManager.ResolveInfoFlags.of(0L))
+        else @Suppress("DEPRECATION")
+            packageManager.resolveActivity(home, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+        return resolved?.activityInfo?.packageName == packageName
+    }
+
+    /** Onboarding: если оболочка ещё не Home — фирменный запрос назначения через системный механизм. */
+    private fun maybeShowHomeHint() {
+        if (Prefs.get(this).homeHintDismissed || isDefaultHome()) return
+        val dlg = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.home_hint_title)
+            .setMessage(R.string.home_hint_message)
+            .setPositiveButton(R.string.home_hint_action) { _, _ -> requestHomeRole() }
+            .setNegativeButton(R.string.home_hint_later) { d, _ ->
+                Prefs.get(this).homeHintDismissed = true; d.dismiss()
+            }
+            .setCancelable(false)
+            .create()
+        dlg.window?.decorView?.setBackgroundResource(R.color.vw_background)
+        dlg.show()
+    }
+
+    /** RoleManager.ROLE_HOME (Android 10+) — штатный системный механизм с подтверждением пользователя. */
+    private fun requestHomeRole() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val rm = getSystemService(RoleManager::class.java)
+            if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) &&
+                !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
+                startActivity(rm.createRequestRoleIntent(RoleManager.ROLE_HOME))
+                return
+            }
+        }
+        // Fallback: системный выбор приложения Home (может отсутствовать на OEM-прошивках).
+        try {
+            startActivity(Intent(Settings.ACTION_HOME_SETTINGS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } catch (_: Exception) {
+            Toast.makeText(this, R.string.home_settings_missing, Toast.LENGTH_LONG).show()
+        }
+        Prefs.get(this).homeHintDismissed = true
+    }
+
+    // ==================== Аппаратные клавиши (руль) ====================
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> { toggleTransport(); return true }
+                KeyEvent.KEYCODE_MEDIA_NEXT -> { skipTransport(true); return true }
+                KeyEvent.KEYCODE_MEDIA_PREVIOUS -> { skipTransport(false); return true }
+                KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN,
+                KeyEvent.KEYCODE_VOLUME_MUTE -> {
+                    // Стандартная обработка системы (AudioManager) — не перехватываем.
+                }
+                else -> KeyLogger.logUnknown(this, event)
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     companion object {
-        private const val KEY_SECTION_TAG = "vw_section_tag"
+        const val REQ_AUDIO_PERM_HINT = 101
     }
 }

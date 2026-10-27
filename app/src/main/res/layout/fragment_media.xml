@@ -60,6 +60,11 @@
                     android:thumbTint="@color/vw_accent"/>
             </LinearLayout>
 
+            <!-- Прокручиваемый список РЕАЛЬНО найденных композиций MediaStore -->
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/localList"
+                android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+                android:minHeight="60dp" android:layout_marginTop="8dp" android:fadeScrollbars="false"/>
+
             <TextView android:id="@+id/localStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="10dp" android:gravity="center" android:textColor="@color/vw_text_secondary"
                 android:textSize="@dimen/small_text" android:text="@string/media_local_empty"/>

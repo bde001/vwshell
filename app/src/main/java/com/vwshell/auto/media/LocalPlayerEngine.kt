@@ -216,27 +216,32 @@ class LocalPlayerEngine private constructor(context: Context) {
         session?.setMetadata(md)
     }
 
-    private fun updateState(@PlaybackState.State state: Int) {
+    private fun updateState(state: Int) {
         val actions = PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or
             PlaybackState.ACTION_PLAY_PAUSE or PlaybackState.ACTION_SKIP_TO_NEXT or
             PlaybackState.ACTION_SKIP_TO_PREVIOUS or PlaybackState.ACTION_SEEK_TO or
             PlaybackState.ACTION_STOP
-        session?.setPlaybackState(PlaybackState.Builder(state, actions, currentPosition()).build())
+        session?.setPlaybackState(
+            PlaybackState.Builder()
+                .setActions(actions)
+                .setState(state, currentPosition(), 1.0f)
+                .build())
     }
 
     private fun loadArtwork(item: AudioItem) {
         artworkItemId = item.id
         io.execute {
             val bmp: Bitmap? = try {
-                val uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                // Реальная обложка: MediaStore Artwork для конкретного track id.
-                val artUri = Uri.withAppendedPath(uri, item.id.toString())
+                // Реальная обложка: контент-URI конкретного трека MediaStore.
+                val artUri = android.content.ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, item.id)
                 appContext.contentResolver.openInputStream(artUri)?.use { BitmapFactory.decodeStream(it) }
             } catch (_: Throwable) { null }
             mainHandler.post {
                 if (artworkItemId == item.id) {
                     if (bmp != null) {
-                        val md = MediaMetadata.Builder(session?.metadata ?: MediaMetadata.Builder().build())
+                        val base = try { session?.metadata } catch (_: IllegalStateException) { null }
+                        val md = MediaMetadata.Builder(base ?: MediaMetadata.Builder().build())
                             .putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, bmp).build()
                         session?.setMetadata(md)
                     }
@@ -268,6 +273,9 @@ class LocalPlayerEngine private constructor(context: Context) {
         @Volatile private var instance: LocalPlayerEngine? = null
         fun get(context: Context): LocalPlayerEngine =
             instance ?: synchronized(this) { instance ?: LocalPlayerEngine(context).also { instance = it } }
+
+        /** Только существующий экземпляр: мини-плеер не должен создавать плеер и MediaSession «вхолостую». */
+        fun peekOrNull(context: Context): LocalPlayerEngine? = instance
     }
 
     private object Build_M { val isAtLeastO = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O }

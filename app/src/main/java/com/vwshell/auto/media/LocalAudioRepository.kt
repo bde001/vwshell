@@ -36,7 +36,8 @@ object LocalAudioRepository {
             MediaStore.Audio.Media.ALBUM,
             MediaStore.Audio.Media.DURATION
         )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC != 0}"
+        // IS_MUSIC хранится как строковый столбец «0/1» — сравниваем со "0", не с Int.
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
         var cursor: Cursor? = null
         try {
             cursor = context.contentResolver.query(
@@ -52,7 +53,7 @@ object LocalAudioRepository {
                 items.add(
                     AudioItem(
                         id = id,
-                        uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id.toString()),
+                        uri = android.content.ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id),
                         title = cursor.getString(titleCol) ?: "",
                         artist = normalize(cursor.getString(artistCol)),
                         album = normalize(cursor.getString(albumCol)),

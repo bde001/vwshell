@@ -21,6 +21,9 @@ abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker,
 
     protected abstract val titleRes: Int
 
+    /** Синхронизация chrome Activity при восстановлении раздела. */
+    override fun onSectionRestored(tag: String, titleRes: Int) {}
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.findViewById<TextView>(R.id.sectionTitle).setText(titleRes)
@@ -28,7 +31,7 @@ abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker,
             (activity as? MainActivity)?.showHome() ?: activity?.onBackPressedDispatcher?.onBackPressed()
         }
         // Раздел мог быть восстановлен после поворота/пробуждения — синхронизируем верхнюю панель и состояние HOME.
-        (activity as? MainActivity)?.onSectionRestored(javaClass.name, titleRes)
+        (activity as? MainActivity.BaseSectionHeaderClockHolder)?.onSectionRestored(javaClass.name, titleRes)
     }
 
     private val clockFormat = SimpleDateFormat("HH:mm", Locale.getDefault())

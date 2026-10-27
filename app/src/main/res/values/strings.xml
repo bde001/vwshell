@@ -195,4 +195,15 @@
     <string name="media_local_empty">Медиатека пуста. Скопируйте аудиофайлы в внутреннее хранилище магнитолы и нажмите «Обновить список».</string>
     <string name="media_grant_audio">Доступ к аудио</string>
     <string name="media_rescan">Обновить список</string>
+    <string name="vehicle_app_missing">Car Scanner ELM OBD2 не установлен. Открываем страницу установки.</string>
+    <string name="home_hint_title">VW Shell как главный экран</string>
+    <string name="home_hint_message">Чтобы оболочка запускалась кнопкой HOME на магнитоле, подтвердите её назначение домашним экраном в системном диалоге Android. Это можно сделать позже в Настройках.</string>
+    <string name="home_hint_action">Сделать главным экраном</string>
+    <string name="home_hint_later">Позже</string>
+    <string name="home_settings_missing">Системный экран выбора домашнего приложения отсутствует на этой прошивке.</string>
+    <string name="media_no_permission_audio">Нет доступа к аудиофайлам. Нажмите «Доступ к аудио» и подтвердите разрешение — без него медиатека не читается.</string>
+    <string name="media_playing_local">Воспроизведение: локальные файлы (собственный плеер VW Shell)</string>
+    <string name="media_local_paused">Пауза (локальный плеер)</string>
+    <string name="media_local_stopped">Локальный плеер остановлен</string>
+    <string name="media_load_failed">Не удалось прочитать медиатеку на этом устройстве.</string>
 </resources>
