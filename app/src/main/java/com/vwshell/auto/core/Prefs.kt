@@ -30,6 +30,16 @@ class Prefs private constructor(context: Context) {
         get() = sp.getString(KEY_VEHICLE, DEFAULT_VEHICLE_PKG)
         set(v) = sp.edit().putString(KEY_VEHICLE, v).apply()
 
+    /** Выбранное приложение для плитки «AppConnect» (ожидается ZLink; выбор — через диалог). */
+    var appConnectAppPackage: String?
+        get() = sp.getString(KEY_APPCONNECT, null)
+        set(v) = sp.edit().putString(KEY_APPCONNECT, v).apply()
+
+    /** Выбранное приложение для плитки «Звук» (звуковое/equalizer-приложение; выбор — через диалог). */
+    var soundAppPackage: String?
+        get() = sp.getString(KEY_SOUND_APP, null)
+        set(v) = sp.edit().putString(KEY_SOUND_APP, v).apply()
+
     /** Onboarding-подсказка «Сделать главным экраном» больше не показывать. */
     var homeHintDismissed: Boolean
         get() = sp.getBoolean(KEY_HOME_HINT, false)
@@ -111,6 +121,8 @@ class Prefs private constructor(context: Context) {
         private const val KEY_RADIO = "radio_app"
         private const val KEY_PHONE = "phone_app"
         private const val KEY_VEHICLE = "vehicle_app"
+        private const val KEY_APPCONNECT = "appconnect_app_package"
+        private const val KEY_SOUND_APP = "sound_app_package"
         private const val KEY_HOME_HINT = "home_hint_dismissed"
         /** Car Scanner ELM OBD2 (поддерживает VW/Audi, в т.ч. Golf IV BCB через ELM327). */
         const val DEFAULT_VEHICLE_PKG = "com.mgmadv.carscanner.elm.free"

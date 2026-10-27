@@ -25,10 +25,31 @@
 
         <ImageButton android:id="@+id/btnSwitchSource" style="@style/VW.ControlButton.small"
             android:src="@drawable/ic_bluetooth" android:contentDescription="@string/media_switch_source"/>
+
+        <!-- Компактная пиктограмма обновления списка — рядом с кнопкой источника -->
+        <ImageButton android:id="@+id/btnRescanIcon" style="@style/VW.ControlButton.small"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_refresh_small" android:contentDescription="@string/media_rescan"/>
     </LinearLayout>
 
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
         android:orientation="horizontal" android:baselineAligned="false">
+
+        <!-- Крайняя левая узкая колонка: ВЕРТИКАЛЬНЫЙ регулятор громкости локального плеера -->
+        <FrameLayout android:id="@+id/volumeColumn"
+            android:layout_width="wrap_content" android:layout_height="match_parent"
+            android:paddingStart="6dp" android:paddingEnd="2dp">
+            <SeekBar
+                android:id="@+id/volumeSeekVertical"
+                android:layout_width="300dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:max="100"
+                android:progressTint="@color/vw_accent"
+                android:thumbTint="@color/vw_accent"
+                android:rotation="270"
+                android:contentDescription="@string/media_volume"/>
+        </FrameLayout>
 
         <!-- Левая колонка: обложка, название, исполнитель, основные элементы управления -->
         <ScrollView android:id="@+id/nowPlayingPanel"
@@ -63,8 +84,20 @@
                         android:textColor="@color/vw_text_disabled" android:textSize="@dimen/small_text" android:text="0:00"/>
                 </LinearLayout>
 
+                <!-- Время трека: текущее/общее — по центру -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center" android:layout_marginTop="12dp">
+                    <TextView android:id="@+id/npPosCenter" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text" android:text="0:00"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp" android:layout_marginEnd="6dp"
+                        android:textColor="@color/vw_text_disabled" android:textSize="@dimen/body_text" android:text="/"/>
+                    <TextView android:id="@+id/npDurCenter" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text" android:text="0:00"/>
+                </LinearLayout>
+
                 <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:layout_marginTop="10dp">
+                    android:orientation="horizontal" android:layout_gravity="center_horizontal" android:layout_marginTop="10dp">
                     <ImageButton android:id="@+id/btnPrev" style="@style/VW.ControlButton"
                         android:src="@drawable/ic_prev" android:contentDescription="@string/media_prev" android:alpha="0.35"/>
                     <ImageButton android:id="@+id/btnPlay" style="@style/VW.ControlButton.play"
@@ -73,23 +106,12 @@
                         android:src="@drawable/ic_next" android:contentDescription="@string/media_next" android:alpha="0.35"/>
                 </LinearLayout>
 
-                <!-- Системная громкость (AudioManager — поддерживаемый механизм) -->
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="12dp">
-                    <ImageView android:layout_width="@dimen/icon_sm" android:layout_height="@dimen/icon_sm"
-                        android:src="@drawable/ic_volume" android:contentDescription="@string/media_volume"
-                        android:tint="@color/vw_text_secondary"/>
-                    <SeekBar android:id="@+id/volumeSeek" android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:layout_marginStart="10dp" android:progressTint="@color/vw_accent"
-                        android:thumbTint="@color/vw_accent"/>
-                </LinearLayout>
-
-                <TextView android:id="@+id/playerStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp" android:gravity="center" android:textColor="@color/vw_text_secondary"
-                    android:textSize="@dimen/small_text" android:text="@string/media_local_empty"/>
+                <!-- Нижняя текстовая строка статуса убрана; горизонтальная громкость заменена вертикальной слева -->
+                <View android:id="@+id/playerStatus" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+                <SeekBar android:id="@+id/volumeSeek" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
 
                 <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:layout_marginTop="10dp">
+                    android:orientation="horizontal" android:layout_gravity="center_horizontal" android:layout_marginTop="10dp">
                     <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantAudio" style="@style/VW.Button.Accent"
                         android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
                         android:text="@string/media_grant_audio" android:visibility="gone"/>

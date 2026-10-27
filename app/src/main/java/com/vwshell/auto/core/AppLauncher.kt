@@ -240,6 +240,41 @@ object AppLauncher {
     )
 
     /**
+     * Кандидаты для плитки «AppConnect»: реально установленные launchable-приложения,
+     * отфильтрованные по известным прошивочным/связным пакетам (ожидается ZLink);
+     * если таких нет — показываем полный список запускаемых приложений, чтобы выбор был реальным.
+     */
+    fun appConnectCandidates(context: Context): List<AppEntry> {
+        val launchable = installedLaunchableApps(context)
+        val known = launchable.filter { e ->
+            val p = e.packageName.lowercase()
+            val l = e.label.lowercase()
+            p.contains("zlink") || p.contains("carplay") || p.contains("auto") && p.contains("link") ||
+                l.contains("zlink") || l.contains("app connect") || l.contains("appconnect")
+        }
+        return if (known.isNotEmpty()) known else launchable
+    }
+
+    /**
+     * Кандидаты для плитки «Звук»: установленные звуковые/equalizer-приложения.
+     * Пустой список допустим — вызывающий показывает понятное сообщение.
+     */
+    fun soundCandidates(context: Context): List<AppEntry> {
+        val launchable = installedLaunchableApps(context)
+        return launchable.filter { e ->
+            val p = e.packageName.lowercase()
+            val l = e.label.lowercase()
+            p.contains("equalizer") || p.contains("sound") || p.contains("audio") ||
+                l.contains("equalizer") || l == "eq" ||
+                l.contains("звук") || l.contains("эквалайзер") ||
+                (l.contains("sound") && !p.contains("settings"))
+        }
+    }
+
+    /** Все реально запускаемые приложения (используется как общий список кандидатов). */
+    fun allLaunchableApps(context: Context): List<AppEntry> = installedLaunchableApps(context)
+
+    /**
      * Состояние Bluetooth: null — адаптера нет / нет доступа (BLUETOOTH_CONNECT не выдано);
      * иначе — включён ли адаптер. Только реально доступные данные.
      */

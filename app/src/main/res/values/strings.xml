@@ -216,4 +216,13 @@
     <string name="media_local_paused">Пауза (локальный плеер)</string>
     <string name="media_local_stopped">Локальный плеер остановлен</string>
     <string name="media_load_failed">Не удалось прочитать медиатеку на этом устройстве.</string>
+    <string name="tile_appconnect">AppConnect</string>
+    <string name="page2_apps">Приложения</string>
+    <string name="page2_sys_settings">Настройки системы</string>
+    <string name="app_pick_appconnect">Выберите приложение AppConnect</string>
+    <string name="app_pick_sound">Выберите звуковое приложение</string>
+    <string name="app_none_available">Приложения для выбора не найдены</string>
+    <string name="app_no_sound_apps">Звуковые приложения не найдены</string>
+    <string name="sys_settings_missing">Системные настройки недоступны</string>
+    <string name="splash_logo_desc">Логотип Volkswagen</string>
 </resources>
