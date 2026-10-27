@@ -189,4 +189,10 @@
     <!-- Общие переходы -->
     <string name="settings_screen_missing">Системный экран недоступен на этой прошивке</string>
     <string name="open">Открыть</string>
+    <string name="media_local_title">Локальная музыка</string>
+    <string name="media_external_title">Внешний источник</string>
+    <string name="media_volume">Громкость</string>
+    <string name="media_local_empty">Медиатека пуста. Скопируйте аудиофайлы в внутреннее хранилище магнитолы и нажмите «Обновить список».</string>
+    <string name="media_grant_audio">Доступ к аудио</string>
+    <string name="media_rescan">Обновить список</string>
 </resources>

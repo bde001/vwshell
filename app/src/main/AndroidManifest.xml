@@ -6,6 +6,7 @@
       Разрешения оболочки. Сетевые разрешения ОТСУТСТВУЮТ намеренно:
       приложение работает без интернета, не содержит рекламы/аналитики/телеметрии.
     -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <!-- Запрашиваются ТОЛЬКО при явном открытии разделов «Контакты» и «Журнал вызовов». -->
