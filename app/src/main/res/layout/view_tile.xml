@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <ImageView
+        android:id="@+id/tileIcon"
+        android:layout_width="@dimen/tile_icon"
+        android:layout_height="@dimen/tile_icon"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="26dp"
+        android:contentDescription="@null"
+        app:tint="@color/vw_icon_tint"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        tools:src="@drawable/ic_radio" />
+    <TextView
+        android:id="@+id/tileLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="14dp"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="@dimen/tile_label"
+        android:letterSpacing="0.03"
+        tools:text="Радио" />
+    <View
+        android:id="@+id/tileUnderline"
+        android:layout_width="@dimen/tile_underline_w"
+        android:layout_height="@dimen/tile_underline_h"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:alpha="0.9"
+        android:background="@drawable/accent_line" />
+</merge>

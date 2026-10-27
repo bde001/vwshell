@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24"
+    android:tint="@color/vw_icon_tint">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M3.24,6 L20.76,6 C21.55,6 22.16,6.63 22.16,7.41 L22.16,18.59 C22.16,19.38 21.53,20 20.75,20 L3.25,20 C2.46,20 1.84,19.37 1.84,18.59 L1.84,7.41 C1.84,6.63 2.45,6 3.24,6 Z M20.48,8.5 L3.52,8.5 L3.52,17.5 L20.48,17.5 L20.48,8.5 Z M5.5,10.5 L9.5,10.5 L9.5,12.5 L5.5,12.5 Z M16.5,10.5 A1.5,1.5 0 1 0 16.5,13.5 A1.5,1.5 0 1 0 16.5,10.5 Z M12.5,10.5 L14.5,10.5 L14.5,15.5 L12.5,15.5 Z M5.5,14 L9.5,14 L9.5,15.5 L5.5,15.5 Z"/>
+</vector>

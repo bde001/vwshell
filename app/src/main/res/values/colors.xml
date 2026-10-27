@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Палитра Volkswagen Discover Pro -->
+    <color name="vw_background">#FF050505</color>
+    <color name="vw_tile_bg">#FF101214</color>
+    <color name="vw_tile_bg_pressed">#FF1B1E21</color>
+    <color name="vw_panel_bg">#FF0A0B0C</color>
+    <color name="vw_text_primary">#FFF2F2F2</color>
+    <color name="vw_text_secondary">#FF92979C</color>
+    <color name="vw_text_disabled">#FF5A5F63</color>
+    <color name="vw_accent">#FFE3182D</color>
+    <color name="vw_accent_dark">#FFB01223</color>
+    <color name="vw_divider">#FF2A2D30</color>
+    <color name="vw_stroke">#FF3A3E42</color>
+    <color name="vw_icon_tint">#FFF2F2F2</color>
+    <color name="vw_scrim">#B3000000</color>
+</resources>

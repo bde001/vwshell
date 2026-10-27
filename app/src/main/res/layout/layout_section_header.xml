@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/topbar_height"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@color/vw_background"
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingEnd="@dimen/screen_padding">
+
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_back"
+        android:scaleType="centerInside"
+        android:contentDescription="@string/back"
+        android:focusable="true"/>
+
+    <TextView
+        android:id="@+id/sectionTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="@dimen/title_text"
+        android:letterSpacing="0.06"
+        android:text="@string/radio_title"/>
+
+    <TextView
+        android:id="@+id/headerClock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/vw_text_secondary"
+        android:textSize="@dimen/body_text"
+        android:fontFamily="sans-serif-light"/>
+</LinearLayout>

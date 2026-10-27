@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bottomBar"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/bottombar_height"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@color/vw_panel_bg"
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingEnd="@dimen/screen_padding">
+
+    <ImageView
+        android:id="@+id/sourceIcon"
+        android:layout_width="@dimen/icon_md"
+        android:layout_height="@dimen/icon_md"
+        android:layout_marginEnd="12dp"
+        android:src="@drawable/ic_media"
+        android:contentDescription="@string/media_source"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/sourceText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="@color/vw_text_secondary"
+        android:textSize="@dimen/body_text"
+        android:text="@string/source_none"/>
+
+    <TextView
+        android:id="@+id/climateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:textColor="@color/vw_text_secondary"
+        android:textSize="@dimen/body_text"
+        android:visibility="gone"/>
+</LinearLayout>

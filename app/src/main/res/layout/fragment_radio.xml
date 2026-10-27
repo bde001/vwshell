@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/vw_background">
+    <include layout="@layout/layout_section_header"/>
+    <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="5"
+            android:orientation="vertical" android:gravity="center_horizontal" android:padding="@dimen/screen_padding">
+            <TextView android:id="@+id/radioBand" style="@style/VW.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/radio_band_fm"/>
+            <TextView android:id="@+id/radioFreq" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+                android:textColor="@color/vw_text_primary" android:textSize="56sp" android:fontFamily="sans-serif-light" android:text="--.-"/>
+            <TextView android:id="@+id/radioStationName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text" android:singleLine="true" android:maxWidth="360dp" android:ellipsize="end"/>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="20dp">
+                <ImageButton android:id="@+id/btnPrev" style="@style/VW.ControlButton" android:src="@drawable/ic_prev" android:contentDescription="@string/radio_prev"/>
+                <ImageButton android:id="@+id/btnSearch" style="@style/VW.ControlButton" android:src="@drawable/ic_search" android:contentDescription="@string/radio_search"/>
+                <ImageButton android:id="@+id/btnNext" style="@style/VW.ControlButton" android:src="@drawable/ic_next" android:contentDescription="@string/radio_next"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="14dp">
+                <ImageButton android:id="@+id/btnFav" style="@style/VW.ControlButton.small" android:src="@drawable/ic_star_outline" android:contentDescription="@string/radio_favorites"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnOpenRadioApp" style="@style/VW.Button"
+                    android:layout_width="wrap_content" android:layout_height="@dimen/control_button" android:layout_marginStart="12dp" android:text="@string/radio_open_app"/>
+            </LinearLayout>
+            <TextView android:id="@+id/radioStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp"
+                android:textColor="@color/vw_text_secondary" android:textSize="@dimen/small_text" android:gravity="center" android:text="@string/radio_no_tuner"/>
+        </LinearLayout>
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@drawable/divider_h"/>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="4" android:orientation="vertical">
+            <TextView style="@style/VW.SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="@dimen/screen_padding" android:text="@string/radio_frequency"/>
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/stationList" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:paddingBottom="8dp" android:clipToPadding="false"/>
+            <TextView android:id="@+id/stationsEmpty" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center" android:visibility="gone"
+                android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text" android:padding="24dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/vw_background">
+    <include layout="@layout/layout_section_header"/>
+    <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:orientation="vertical" android:gravity="center" android:padding="@dimen/screen_padding">
+        <TextView android:id="@+id/mediaSourceLabel" style="@style/VW.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/media_source"/>
+        <ImageView android:id="@+id/mediaSourceIcon" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginTop="14dp"
+            android:src="@drawable/ic_media" android:contentDescription="@string/media_source" android:visibility="gone"/>
+        <TextView android:id="@+id/mediaTrack" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp"
+            android:gravity="center" android:singleLine="true" android:ellipsize="end" android:textColor="@color/vw_text_primary" android:textSize="26sp"/>
+        <TextView android:id="@+id/mediaArtist" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp"
+            android:gravity="center" android:singleLine="true" android:ellipsize="end" android:textColor="@color/vw_text_secondary" android:textSize="@dimen/title_text"/>
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="34dp">
+            <ImageButton android:id="@+id/btnMediaPrev" style="@style/VW.ControlButton" android:src="@drawable/ic_prev" android:contentDescription="@string/media_prev"/>
+            <ImageButton android:id="@+id/btnMediaPlay" style="@style/VW.ControlButton.play" android:src="@drawable/ic_play" android:contentDescription="@string/media_play"/>
+            <ImageButton android:id="@+id/btnMediaNext" style="@style/VW.ControlButton" android:src="@drawable/ic_next" android:contentDescription="@string/media_next"/>
+        </LinearLayout>
+        <TextView android:id="@+id/mediaStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="30dp"
+            android:gravity="center" android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text" android:text="@string/media_no_session"/>
+        <com.google.android.material.button.MaterialButton android:id="@+id/btnPickMediaApp" style="@style/VW.Button"
+            android:layout_width="wrap_content" android:layout_height="@dimen/button_height" android:layout_marginTop="18dp"
+            android:text="@string/media_pick_app" android:visibility="gone"/>
+    </LinearLayout>
+</LinearLayout>

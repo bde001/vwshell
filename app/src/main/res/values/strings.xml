@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VW Shell</string>
+
+    <!-- Плитки главного экрана -->
+    <string name="tile_radio">Радио</string>
+    <string name="tile_media">Медиа</string>
+    <string name="tile_phone">Телефон</string>
+    <string name="tile_navigation">Навигация</string>
+    <string name="tile_vehicle">Автомобиль</string>
+    <string name="tile_settings">Настройки</string>
+
+    <string name="back">Назад</string>
+    <string name="home">Домой</string>
+    <string name="unavailable">Недоступно</string>
+    <string name="not_installed">Приложение не установлено</string>
+    <string name="launch_failed">Не удалось запустить приложение</string>
+
+    <!-- Радио -->
+    <string name="radio_title">Радио</string>
+    <string name="radio_no_tuner">FM-тюнер на этом устройстве недоступен. Реальный приём радиосигнала не имитируется.</string>
+    <string name="radio_open_app">Открыть штатное радио</string>
+    <string name="radio_tuner_intent">Системный интерфейс тюнера (BROWSE_FM_BANDS) не найден.</string>
+    <string name="radio_preset">Пресет %1$d</string>
+    <string name="radio_search">Поиск станции</string>
+    <string name="radio_prev">Предыдущая</string>
+    <string name="radio_next">Следующая</string>
+    <string name="radio_favorites">Избранное</string>
+    <string name="radio_band_fm">FM</string>
+    <string name="radio_frequency">Частота</string>
+
+    <!-- Медиа -->
+    <string name="media_title">Медиа</string>
+    <string name="media_no_session">Активный источник воспроизведения не обнаружен. Подключите USB-накопитель или Bluetooth Audio, либо запустите медиаприложение.</string>
+    <string name="media_play">Воспроизведение</string>
+    <string name="media_pause">Пауза</string>
+    <string name="media_prev">Предыдущий трек</string>
+    <string name="media_next">Следующий трек</string>
+    <string name="media_unknown_artist">Неизвестный исполнитель</string>
+    <string name="media_source">Источник</string>
+    <string name="media_pick_app">Выбрать медиаприложение</string>
+    <string name="media_track_unknown">Композиция не определена</string>
+
+    <!-- Телефон -->
+    <string name="phone_title">Телефон</string>
+    <string name="phone_dialer">Телефонная книга</string>
+    <string name="phone_bt_connect">Подключение Bluetooth-телефона</string>
+    <string name="phone_no_bt">Bluetooth-адаптер отсутствует или недоступен.</string>
+    <string name="phone_bt_off">Bluetooth выключен</string>
+    <string name="phone_bt_on">Bluetooth включён</string>
+    <string name="phone_open_dialpad">Набор номера</string>
+    <string name="phone_call_log">Журнал вызовов</string>
+    <string name="phone_contacts">Контакты</string>
+    <string name="phone_perm_needed">Для отображения контактов и журнала вызовов требуется разрешение. Разрешения запрашиваются только при первом открытии этих разделов.</string>
+    <string name="phone_empty">Нет данных. Синхронизированный телефонныйbook отсутствует.</string>
+    <string name="phone_grant">Разрешить доступ</string>
+    <string name="phone_denied_note">Доступ к контактам и журналу вызовов ограничен пользователем. Отображаются только действия запуска системных приложений.</string>
+
+    <!-- Навигация -->
+    <string name="nav_title">Навигация</string>
+    <string name="nav_launch">Запустить навигацию</string>
+    <string name="nav_none">Навигационные приложения не найдены. Установите Google Maps, Яндекс Навигатор или другой навигатор.</string>
+    <string name="nav_default">Приложение по умолчанию</string>
+    <string name="nav_ask">Каждый раз спрашивать</string>
+    <string name="nav_address_hint">Адрес или место</string>
+    <string name="nav_route">Маршрут</string>
+
+    <!-- Автомобиль -->
+    <string name="vehicle_title">Автомобиль</string>
+    <string name="vehicle_no_can">CAN-интерфейс не обнаружен. Данные автомобиля будут отображаться после интеграции CAN-box или API производителя.</string>
+    <string name="vehicle_integration_info">Интерфейс интеграции подготовлен: реализуйте VehicleDataProvider в прошивке/приложении CAN-box с Actions: com.vwshell.auto.VEHICLE_DATA. Приложение отобразит только реально полученные параметры.</string>
+    <string name="vehicle_waiting">Ожидание данных…</string>
+    <string name="vehicle_sources_found">Найдены источники данных автомобиля:</string>
+
+    <!-- Настройки -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_apps">Назначение приложений</string>
+    <string name="settings_nav_app">Навигационное приложение</string>
+    <string name="settings_media_app">Медиаприложение</string>
+    <string name="settings_radio_app">Радио приложение</string>
+    <string name="settings_phone_app">Телефон (Dialer)</string>
+    <string name="settings_display">Экран</string>
+    <string name="settings_brightness">Яркость</string>
+    <string name="settings_brightness_unavailable">Системная яркость недоступна без привилегий OEM-прошивки. Используйте настройки устройства.</string>
+    <string name="settings_behavior">Поведение оболочки</string>
+    <string name="settings_always_home">Всегда быть домашним экраном</string>
+    <string name="settings_set_home">Назначить оболочку домашним экраном</string>
+    <string name="settings_about">О приложении</string>
+    <string name="settings_about_text">VW Shell %1$s\nОболочка в стиле Volkswagen Discover Pro.\nБез интернета, рекламы, аналитики и телеметрии.</string>
+    <string name="settings_keylog">Журнал аппаратных клавиш</string>
+    <string name="settings_keylog_desc">Логирует неизвестные коды клавиш руля для последующей настройки.</string>
+    <string name="settings_keylog_open">Открыть журнал клавиш</string>
+    <string name="keylog_title">Журнал клавиш</string>
+    <string name="keylog_empty">Клавиши ещё не регистрировались. Нажимайте кнопки руля — неизвестные коды появятся здесь.</string>
+
+    <string name="default_mode">Режим автомобиля</string>
+    <string name="source_none">Источник: —</string>
+</resources>

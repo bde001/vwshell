@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24"
+    android:tint="@color/vw_icon_tint">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M3,18h3v-4H3V18zM8.5,18h3V11h-3V18zM14,18h3V7h-3V18zM19.5,18h3V2h-3V18z"/>
+</vector>
