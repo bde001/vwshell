@@ -9,7 +9,9 @@ android {
 
     defaultConfig {
         applicationId = "com.vwshell.auto"
-        minSdk = 29
+        // HU F9210A: китайская прошивка заявляет Android 13, фактически API 29-30 и 32-битная
+        // система (armeabi-v7a). minSdk 26 покрывает реальный API этой магнитолы.
+        minSdk = 26
         // Целевой SDK 33 — обязательная адаптация под Android 13 (API 33).
         // BLUETOOTH_CONNECT/READ_CONTACTS запрашиваются через Activity Result API по месту
         // использования; Notification Listener Access — специальный доступ системы.
@@ -17,6 +19,10 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         resourceConfigurations += listOf("ru", "en")
+        // Универсальный APK: 32-битная HU F9210A требует armeabi-v7a наряду с arm64-v8a.
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
     }
 
     buildTypes {
