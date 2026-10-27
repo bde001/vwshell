@@ -58,11 +58,15 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
     private lateinit var npSeek: SeekBar
     private lateinit var npPos: TextView
     private lateinit var npDur: TextView
+    private lateinit var npPosCenter: TextView
+    private lateinit var npDurCenter: TextView
     private lateinit var btnPlay: ImageButton
     private lateinit var btnPrev: View
     private lateinit var btnNext: View
-    private lateinit var volumeSeek: SeekBar
-    private lateinit var playerStatus: TextView
+    private lateinit var volumeSeek: SeekBar          // скрыт (горизонтальная громкость убрана)
+    private lateinit var volumeSeekVertical: SeekBar  // вертикальная громкость слева
+    private lateinit var volumeColumn: View
+    private lateinit var playerStatus: View           // нижняя текстовая строка статуса убрана
 
     // Панель источника
     private lateinit var sourceIcon: ImageView
@@ -102,10 +106,14 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         npSeek = view.findViewById(R.id.npSeek)
         npPos = view.findViewById(R.id.npPos)
         npDur = view.findViewById(R.id.npDur)
+        npPosCenter = view.findViewById(R.id.npPosCenter)
+        npDurCenter = view.findViewById(R.id.npDurCenter)
         btnPlay = view.findViewById(R.id.btnPlay)
         btnPrev = view.findViewById(R.id.btnPrev)
         btnNext = view.findViewById(R.id.btnNext)
         volumeSeek = view.findViewById(R.id.volumeSeek)
+        volumeSeekVertical = view.findViewById(R.id.volumeSeekVertical)
+        volumeColumn = view.findViewById(R.id.volumeColumn)
         playerStatus = view.findViewById(R.id.playerStatus)
 
         sourceIcon = view.findViewById(R.id.sourceIcon)
@@ -153,16 +161,25 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         })
 
         // Системная громкость — поддерживаемый механизм AudioManager (поток MUSIC).
+        // Вертикальный регулятор слева; горизонтальный скрыт. Синхронизируем оба.
         val am = requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager
         volumeSeek.max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         volumeSeek.progress = am.getStreamVolume(AudioManager.STREAM_MUSIC)
-        volumeSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        volumeSeekVertical.max = volumeSeek.max
+        volumeSeekVertical.progress = volumeSeek.progress
+        val volListener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, p: Int, fromUser: Boolean) {
-                if (fromUser) am.setStreamVolume(AudioManager.STREAM_MUSIC, p, 0)
+                if (!fromUser) return
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, p, 0)
+                if (sb !== volumeSeek) { volumeSeek.progress = p } else { volumeSeekVertical.progress = p }
             }
             override fun onStartTrackingTouch(sb: SeekBar?) {}
             override fun onStopTrackingTouch(sb: SeekBar?) {}
-        })
+        }
+        volumeSeek.setOnSeekBarChangeListener(volListener)
+        volumeSeekVertical.setOnSeekBarChangeListener(volListener)
+
+        view.findViewById<ImageButton>(R.id.btnRescanIcon).setOnClickListener { loadLibrary() }
 
         grantAudioBtn.setOnClickListener { (activity as? MainActivity)?.requestAudioPermission() }
         rescanBtn.setOnClickListener { loadLibrary() }
@@ -191,6 +208,8 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         // Адаптер привязан к уничтожаемой RecyclerView — отвязываем до пересоздания View.
         listBound = false
         trackList.adapter = null
+        if (::volumeSeek.isInitialized) volumeSeek.setOnSeekBarChangeListener(null)
+        if (::volumeSeekVertical.isInitialized) volumeSeekVertical.setOnSeekBarChangeListener(null)
         super.onDestroyView()
     }
 
@@ -216,6 +235,10 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         // Красная подсветка кнопки переключения при активном внешнем источнике.
         btnSwitchSource.imageTintList = ContextCompat.getColorStateList(
             requireContext(), if (external) R.color.vw_accent else R.color.vw_icon_tint)
+        // Вертикальная громкость — регулятор локального плеера; при внешнем источнике неактивна.
+        volumeColumn.isEnabled = !external
+        volumeSeekVertical.isEnabled = !external
+        volumeSeekVertical.alpha = if (external) 0.35f else 1f
     }
 
     private fun renderLocal() {
@@ -351,12 +374,10 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
                 npSeek.isEnabled = false
                 npSeek.max = 0
                 npSeek.progress = 0
-                npPos.text = "0:00"; npDur.text = "0:00"
+                setTimes("0:00", "0:00")
                 btnPlay.setImageResource(R.drawable.ic_play)
                 setTransportAlpha(localActive = false)
-                if (state == PlaybackState.STATE_ERROR) playerStatus.setText(R.string.media_load_failed)
-                else if (playlist.isEmpty()) playerStatus.setText(R.string.media_local_empty)
-                else playerStatus.setText(R.string.media_local_stopped)
+                // Нижняя строка статуса убрана с экрана: ошибки видны по неактивным кнопкам/плейлисту.
             } else {
                 npTrack.text = item.displayTitle
                 npArtist.text = item.displayArtist
@@ -365,19 +386,11 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
                     npSeek.max = (durationMs / 1000).toInt().coerceAtLeast(1)
                     npSeek.progress = (positionMs / 1000).toInt().coerceIn(0, npSeek.max)
                 }
-                npPos.text = formatTime(positionMs)
-                npDur.text = formatTime(durationMs)
+                setTimes(formatTime(positionMs), formatTime(durationMs))
                 when (state) {
-                    PlaybackState.STATE_PLAYING -> {
-                        btnPlay.setImageResource(R.drawable.ic_pause)
-                        playerStatus.setText(R.string.media_playing_local)
-                    }
-                    PlaybackState.STATE_PAUSED -> {
-                        btnPlay.setImageResource(R.drawable.ic_play)
-                        playerStatus.setText(R.string.media_local_paused)
-                    }
+                    PlaybackState.STATE_PLAYING -> btnPlay.setImageResource(R.drawable.ic_pause)
+                    PlaybackState.STATE_PAUSED -> btnPlay.setImageResource(R.drawable.ic_play)
                     PlaybackState.STATE_BUFFERING -> btnPlay.setImageResource(R.drawable.ic_play)
-                    PlaybackState.STATE_ERROR -> playerStatus.setText(R.string.media_load_failed)
                     else -> {}
                 }
                 setTransportAlpha(localActive = true)
@@ -438,12 +451,12 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
             npArtist.text = ""
             npSeek.isEnabled = false
             npSeek.max = 0
-            npPos.text = "0:00"; npDur.text = "0:00"
+            setTimes("0:00", "0:00")
             npArt.scaleType = ImageView.ScaleType.CENTER_INSIDE
             npArt.setImageResource(R.drawable.ic_album)
             btnPlay.setImageResource(R.drawable.ic_play)
             btnPlay.alpha = 0.35f; btnPrev.alpha = 0.35f; btnNext.alpha = 0.35f
-            playerStatus.setText(R.string.media_no_session)
+            sourceLabel.setText(R.string.media_no_session)
             return
         }
         val pkgLabel = AppLauncher.appLabel(requireContext(), snap.sourcePackage) ?: snap.sourcePackage ?: ""
@@ -463,16 +476,15 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
             npSeek.max = (snap.durationMs / 1000).toInt().coerceAtLeast(1)
             npSeek.progress = (snap.positionMs / 1000).toInt().coerceIn(0, npSeek.max)
         }
-        npPos.text = formatTime(if (snap.positionMs > 0) snap.positionMs else 0)
-        npDur.text = formatTime(if (snap.durationMs > 0) snap.durationMs else 0)
+        setTimes(formatTime(if (snap.positionMs > 0) snap.positionMs else 0),
+                 formatTime(if (snap.durationMs > 0) snap.durationMs else 0))
         btnPlay.setImageResource(if (snap.playing) R.drawable.ic_pause else R.drawable.ic_play)
         // Кнопки активны только при реально объявленных источником действиях.
         btnPlay.alpha = if (snap.canPlay() || snap.canPause()) 1f else 0.35f
         btnPrev.alpha = if (snap.canSkipPrev()) 1f else 0.35f
         btnNext.alpha = if (snap.canSkipNext()) 1f else 0.35f
-        playerStatus.text = getString(R.string.media_source_of, pkgLabel) + " · " +
-            getString(if (snap.playing) R.string.media_state_playing_ext
-                      else R.string.media_state_paused_ext)
+        // Внешний источник: имя пакета показываем в верхней панели источника (строка статуса снизу убрана)
+        sourceLabel.text = getString(R.string.media_source_of, pkgLabel)
     }
 
     // ---- PlayerSource.Listener: общий источник изменился (плитка BT или кнопка экрана) ----
@@ -510,6 +522,12 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         } catch (_: Exception) {
             Toast.makeText(requireContext(), R.string.media_settings_missing, Toast.LENGTH_LONG).show()
         }
+    }
+
+    /** Время трека: синхронно в компактной строке и в центрированной группе. */
+    private fun setTimes(pos: String, dur: String) {
+        npPos.text = pos; npDur.text = dur
+        npPosCenter.text = pos; npDurCenter.text = dur
     }
 
     private fun formatTime(ms: Long): String {

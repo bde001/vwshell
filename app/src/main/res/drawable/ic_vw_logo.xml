@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Логотип Volkswagen (упрощённый векторный знак: круг + V/W), белый на чёрном splash -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Внешнее кольцо -->
+    <path
+        android:pathData="M100,10 A90,90 0 1,1 99.9,10 Z M100,24 A76,76 0 1,0 99.9,24 Z"
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"/>
+    <!-- Горизонтальная перекладина кольца (диаметр) -->
+    <path
+        android:pathData="M14,96 L186,96 L186,104 L14,104 Z"
+        android:fillColor="#FFFFFF"/>
+    <!-- Буква V (верхняя половина) -->
+    <path
+        android:pathData="M52,30 L68,30 L100,88 L132,30 L148,30 L108,96 L92,96 Z"
+        android:fillColor="#FFFFFF"/>
+    <!-- Буква W (нижняя половина) -->
+    <path
+        android:pathData="M52,170 L68,170 L92,104 L100,124 L108,104 L132,170 L148,170 L116,100 L104,132 L96,132 L84,100 Z"
+        android:fillColor="#FFFFFF"/>
+</vector>
