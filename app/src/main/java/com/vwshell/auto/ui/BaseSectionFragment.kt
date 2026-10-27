@@ -15,9 +15,14 @@ interface BaseSectionHeaderClock {
     fun refreshClock()
 }
 
+/** Хост синхронизации chrome Activity при открытии/восстановлении раздела. */
+interface BaseSectionHeaderClockHolder {
+    fun onSectionRestored(tag: String, titleRes: Int)
+}
+
 /** Общий каркас раздела: заголовок, кнопка «назад», часы в шапке. */
 abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker,
-    MainActivity.BaseSectionHeaderClockHolder, BaseSectionHeaderClock {
+    BaseSectionHeaderClockHolder, BaseSectionHeaderClock {
 
     protected abstract val titleRes: Int
 
@@ -31,7 +36,7 @@ abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker,
             (activity as? MainActivity)?.showHome() ?: activity?.onBackPressedDispatcher?.onBackPressed()
         }
         // Раздел мог быть восстановлен после поворота/пробуждения — синхронизируем верхнюю панель и состояние HOME.
-        (activity as? MainActivity.BaseSectionHeaderClockHolder)?.onSectionRestored(javaClass.name, titleRes)
+        (activity as? BaseSectionHeaderClockHolder)?.onSectionRestored(javaClass.name, titleRes)
     }
 
     private val clockFormat = SimpleDateFormat("HH:mm", Locale.getDefault())

@@ -31,6 +31,7 @@ import com.vwshell.auto.core.ShellState
 import com.vwshell.auto.databinding.ActivityMainBinding
 import com.vwshell.auto.media.LocalPlayerEngine
 import com.vwshell.auto.ui.BaseSectionFragment
+import com.vwshell.auto.ui.BaseSectionHeaderClockHolder
 import com.vwshell.auto.ui.MediaFragment
 import com.vwshell.auto.ui.PhoneFragment
 import com.vwshell.auto.ui.RadioFragment
@@ -51,16 +52,12 @@ import java.util.Locale
  * с тегом = имя класса (исправление дефекта с EmptyFragment); showHome() удаляет раздел;
  * Back возвращает домой, на главном экране событие отдаётся системе.
  */
-class MainActivity : AppCompatActivity(), ShellState.Listener {
+class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeaderClockHolder {
 
     /** Маркер: фрагмент является разделом оболочки (для восстановления после пересоздания Activity). */
     interface BaseSectionMarker
 
-    /** Хост обновления часов шапки раздела по системному событию TIME_TICK. */
-    interface BaseSectionHeaderClockHolder {
-        fun onSectionRestored(tag: String, @StringRes titleRes: Int)
-    }
-
+    /** Хост синхронизации chrome раздела (см. BaseSectionHeaderClockHolder в ui/BaseSectionFragment.kt). */
     private lateinit var binding: ActivityMainBinding
     private var lastClockText: String? = null
     private var currentSectionTag: String? = null
@@ -210,7 +207,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
                     R.string.vehicle_app_missing)
             } },
         TileSpec(R.drawable.ic_settings, R.string.tile_settings) {
-            openSection(SettingsFragment::class.java, R.string.tile_settings) })
+            openSection(SettingsFragment::class.java, R.string.tile_settings) }
     )
 
     /** Вторая страница: подготовленная структура для будущих плиток (пустые ячейки 3x2). */
@@ -299,7 +296,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
     }
 
     /** Вызывается из BaseSectionFragment.onViewCreated — синхронизирует chrome после восстановления. */
-    override fun onSectionRestored(tag: String, titleRes: Int) {
+    override fun onSectionRestored(tag: String, @StringRes titleRes: Int) {
         currentSectionTag = tag
         binding.homeContainer.visibility = View.INVISIBLE
         binding.sectionContainer.visibility = View.VISIBLE

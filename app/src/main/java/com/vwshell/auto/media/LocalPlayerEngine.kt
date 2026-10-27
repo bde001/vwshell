@@ -231,16 +231,17 @@ class LocalPlayerEngine private constructor(context: Context) {
     private fun loadArtwork(item: AudioItem) {
         artworkItemId = item.id
         io.execute {
-            val bmp: Bitmap? = try {
+            val bmp: Bitmap? = runCatching {
                 // Реальная обложка: контент-URI конкретного трека MediaStore.
                 val artUri = android.content.ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, item.id)
                 appContext.contentResolver.openInputStream(artUri)?.use { BitmapFactory.decodeStream(it) }
-            } catch (_: Throwable) { null }
+            }.onFailure { Log.w(TAG, "artwork load failed for ${item.id}", it) }.getOrNull()
             mainHandler.post {
                 if (artworkItemId == item.id) {
                     if (bmp != null) {
-                        val base = try { session?.metadata } catch (_: IllegalStateException) { null }
+                        val base = runCatching { session?.controller?.metadata }
+                            .onFailure { Log.w(TAG, "metadata read failed", it) }.getOrNull()
                         val md = MediaMetadata.Builder(base ?: MediaMetadata.Builder().build())
                             .putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, bmp).build()
                         session?.setMetadata(md)

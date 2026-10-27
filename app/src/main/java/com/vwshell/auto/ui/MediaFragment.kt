@@ -108,6 +108,7 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
             layoutManager = LinearLayoutManager(requireContext())
             adapter = trackAdapter
         }
+        trackAdapterLoaded = true
 
         view.findViewById<View>(R.id.btnLocalPrev).setOnClickListener { engine?.previous() }
         view.findViewById<View>(R.id.btnLocalNext).setOnClickListener { engine?.next() }
@@ -156,6 +157,13 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         super.onPause()
     }
 
+    override fun onDestroyView() {
+        // Адаптер привязан к уничтожаемой RecyclerView — отвязываем до пересоздания View.
+        trackAdapterLoaded = false
+        view?.findViewById<RecyclerView>(R.id.localList)?.adapter = null
+        super.onDestroyView()
+    }
+
     // ==================== Локальная медиатека ====================
 
     /** Загружается ТОЛЬКО при наличии разрешения; иначе — честное состояние и кнопка запроса. */
@@ -177,9 +185,11 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         updateTrackButtons()
     }
 
+    private var trackAdapterLoaded = false
+
     /** Список — только реально найденные MediaStore композиции; кнопки активны при реальном плейлисте. */
     private fun updateTrackButtons() {
-        if (!::trackAdapter.isInitialized) return
+        if (!trackAdapterLoaded) return
         trackAdapter.submit(playlist.mapIndexed { i, it ->
             RowItem(it.displayTitle, "${it.displayArtist} · ${formatTime(it.durationMs)}", payload = i)
         })
