@@ -10,8 +10,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/** Интерфейс для обновления часов раздела системным событием TIME_TICK (без опроса). */
+interface BaseSectionHeaderClock {
+    fun refreshClock()
+}
+
 /** Общий каркас раздела: заголовок, кнопка «назад», часы в шапке. */
-abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker {
+abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker, BaseSectionHeaderClock {
 
     protected abstract val titleRes: Int
 
@@ -30,8 +35,10 @@ abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker 
     override fun onResume() {
         super.onResume()
         updateClock()
-        view?.postDelayed({ if (isResumed) updateClock() }, 20_000)
     }
+
+    /** Обновление часов по системному событию TIME_TICK (см. MainActivity) — без самодельного поллинга. */
+    fun refreshClock() = updateClock()
 
     protected fun updateClock() {
         view?.findViewById<TextView>(R.id.headerClock)?.text = clockFormat.format(Date())

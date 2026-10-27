@@ -10,6 +10,8 @@
         <TextView android:id="@+id/mediaSourceLabel" style="@style/VW.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/media_source"/>
         <ImageView android:id="@+id/mediaSourceIcon" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginTop="14dp"
             android:src="@drawable/ic_media" android:contentDescription="@string/media_source" android:visibility="gone"/>
+        <ImageView android:id="@+id/mediaAlbumArt" android:layout_width="150dp" android:layout_height="150dp" android:layout_marginTop="10dp"
+            android:scaleType="centerInside" android:visibility="gone" android:contentDescription="@string/media_source"/>
         <TextView android:id="@+id/mediaTrack" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="18dp"
             android:gravity="center" android:singleLine="true" android:ellipsize="end" android:textColor="@color/vw_text_primary" android:textSize="26sp"/>
         <TextView android:id="@+id/mediaArtist" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp"
@@ -21,8 +23,13 @@
         </LinearLayout>
         <TextView android:id="@+id/mediaStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="30dp"
             android:gravity="center" android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text" android:text="@string/media_no_session"/>
-        <com.google.android.material.button.MaterialButton android:id="@+id/btnPickMediaApp" style="@style/VW.Button"
-            android:layout_width="wrap_content" android:layout_height="@dimen/button_height" android:layout_marginTop="18dp"
-            android:text="@string/media_pick_app" android:visibility="gone"/>
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="18dp">
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnPickMediaApp" style="@style/VW.Button"
+                android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
+                android:text="@string/media_pick_app" android:visibility="gone"/>
+            <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantMediaAccess" style="@style/VW.Button.Accent"
+                android:layout_width="wrap_content" android:layout_height="@dimen/button_height" android:layout_marginStart="10dp"
+                android:text="@string/media_grant_access" android:visibility="gone"/>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

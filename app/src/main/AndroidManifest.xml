@@ -9,8 +9,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <!-- Запрашиваются ТОЛЬКО при явном открытии разделов «Контакты» и «Журнал вызовов». -->
-    <uses-permission android:name="android.permission.READ_CONTACTS" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.READ_CALL_LOG" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
 
     <queries>
         <intent>

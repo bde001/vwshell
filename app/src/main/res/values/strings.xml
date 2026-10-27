@@ -97,4 +97,95 @@
 
     <string name="default_mode">Режим автомобиля</string>
     <string name="source_none">Источник: —</string>
+
+    <!-- Плитки: приложения и звук -->
+    <string name="tile_apps">Приложения</string>
+    <string name="tile_sound">Звук</string>
+
+    <!-- App Drawer -->
+    <string name="apps_title">Приложения</string>
+    <string name="apps_search_hint">Поиск по названию</string>
+    <string name="apps_empty">Запускаемые приложения не найдены.</string>
+    <string name="apps_no_results">Ничего не найдено по заданному запросу.</string>
+    <string name="apps_fav">В избранное</string>
+    <string name="apps_unfav">Убрать из избранного</string>
+    <string name="apps_hide">Скрыть из сетки</string>
+    <string name="apps_info">О приложении</string>
+    <string name="apps_reset_hidden">Показать все скрытые приложения</string>
+    <string name="apps_hidden_cleared">Скрытые приложения восстановлены</string>
+
+    <!-- Звук -->
+    <string name="sound_title">Звук</string>
+    <string name="sound_volume">Громкость</string>
+    <string name="sound_stream_media">Медиа</string>
+    <string name="sound_stream_call">Вызов</string>
+    <string name="sound_stream_ring">Сигнал вызова</string>
+    <string name="sound_stream_alarm">Будильник</string>
+    <string name="sound_stream_notif">Уведомления</string>
+    <string name="sound_streams_of">Доступные потоки громкости: %1$s</string>
+    <string name="sound_stream_locked">Поток защищён системной политикой</string>
+    <string name="sound_balance">Баланс и фейдер</string>
+    <string name="sound_balance_lr">Левый/правый</string>
+    <string name="sound_balance_fr">Перед/зад</string>
+    <string name="sound_balance_unavailable">Недоступно на этом устройстве. Баланс L/R и фейдер перед/зад не входят в публичный API Android для сторонних приложений: реальное воздействие возможно только через DSP-интерфейс OEM-прошивки или штатное приложение автомобиля. Ползунки, которые не влияют на звук, намеренно не отображаются.</string>
+    <string name="sound_dsp">Эквалайзер и DSP</string>
+    <string name="sound_equalizer">Эквалайзер</string>
+    <string name="sound_system_settings">Настройки звука Android</string>
+    <string name="sound_eq_unavailable">Системная панель аудиоэффектов (эквалайзер) на этой прошивке отсутствует.</string>
+    <string name="sound_loudness_unavailable">Loudness, профили DSP и низкоуровневая коррекция АЧХ доступны только при поддержке аудиосистемой устройства — реальный интерфейс не обнаружен.</string>
+
+    <!-- Медиа: доступ к уведомлениям -->
+    <string name="media_need_access">Для определения активной медиасессии требуется доступ к уведомлениям (Notification Listener Access). Нажмите «Предоставить доступ» и включите VW Shell в списке системных слушателей, затем вернитесь сюда.</string>
+    <string name="media_grant_access">Предоставить доступ</string>
+    <string name="media_settings_missing">Системный экран настроек доступа к уведомлениям недоступен на этой прошивке.</string>
+    <string name="media_source_of">Источник: %1$s</string>
+    <string name="media_action_unsupported">Текущий источник не поддерживает это действие</string>
+
+    <!-- Радио: исправленные единицы и честный статус -->
+    <string name="radio_unit">MHz</string>
+    <string name="radio_fav_added">Станция сохранена в избранное</string>
+    <string name="radio_fav_removed">Станция удалена из избранного</string>
+    <string name="radio_tuner_ui_only">Прямое управление тюнером через стандартный API недоступно: показанная частота — UI-настройка. Реальную смену частоты выполняет штатное радио.</string>
+    <string name="radio_search_unavailable">Автоматический поиск станций возможен только через API тюнера производителя и не имитируется.</string>
+    <string name="radio_am_unavailable">AM/DAB-диапазоны: реальная поддержка тюнером не обнаружена</string>
+    <string name="radio_rds_note">RDS/PS-текст станции отображается только при получении его от тюнера.</string>
+
+    <!-- Телефон -->
+    <string name="phone_bt_perm_denied">Разрешение BLUETOOTH_CONNECT не выдано — состояние адаптера определить невозможно.</string>
+    <string name="phone_calllog_limited">Журнал вызовов недоступен без роли системного Dialer. Откройте журнал в штатном приложении телефона.</string>
+
+    <!-- Настройки: новые группы -->
+    <string name="settings_interface">Интерфейс</string>
+    <string name="settings_clock_format">Формат времени</string>
+    <string name="settings_clock_24">24-часовой</string>
+    <string name="settings_clock_12">12-часовой</string>
+    <string name="settings_defaults">Приложения по умолчанию</string>
+    <string name="settings_system">Система</string>
+    <string name="settings_android">Настройки Android</string>
+    <string name="settings_apps_manage">Управление приложениями</string>
+    <string name="settings_bluetooth">Bluetooth и подключение</string>
+    <string name="settings_notif_access">Доступ к уведомлениям</string>
+    <string name="settings_sound">Настройки звука</string>
+    <string name="settings_launcher">Launcher по умолчанию</string>
+    <string name="settings_reset">Сброс настроек оболочки</string>
+    <string name="settings_reset_confirm">Сбросить все настройки VW Shell (выбранные приложения, избранное, частоты)? Данные системных приложений не затрагиваются.</string>
+    <string name="settings_reset_done">Настройки оболочки сброшены</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+
+    <!-- Vehicle -->
+    <string name="vehicle_subsections">Подразделы</string>
+    <string name="vehicle_status">Состояние автомобиля</string>
+    <string name="vehicle_parking">Парковочная информация</string>
+    <string name="vehicle_comfort">Комфорт и освещение</string>
+    <string name="vehicle_trip">Данные о поездке</string>
+    <string name="vehicle_car_settings">Автомобильные настройки</string>
+    <string name="vehicle_diag">Диагностика и подключение</string>
+    <string name="vehicle_oem_app">Штатное приложение автомобиля</string>
+    <string name="vehicle_oem_pick">Выбрать OEM-приложение…</string>
+    <string name="vehicle_no_data">Функция не поддерживается: специальный CAN/OEM-интерфейс на этом устройстве не обнаружен. Это ограничение платформы, а не неисправность автомобиля.</string>
+
+    <!-- Общие переходы -->
+    <string name="settings_screen_missing">Системный экран недоступен на этой прошивке</string>
+    <string name="open">Открыть</string>
 </resources>

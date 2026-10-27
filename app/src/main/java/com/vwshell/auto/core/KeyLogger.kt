@@ -17,6 +17,11 @@ object KeyLogger {
     private val entries = ArrayDeque<String>()
     private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.US)
 
+    typealias Action = SteeringKeyMap.Action
+
+    /** Действие для клавиши (расширяемая карта руля/пульта). */
+    fun mapAction(keyCode: Int): Action = SteeringKeyMap.map(keyCode)
+
     /** Возвращает true, если код известен и уже обработан стандартным механизмом. */
     fun isKnownKeyCode(keyCode: Int): Boolean = keyCode in KNOWN_KEYS
 

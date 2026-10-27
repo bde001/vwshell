@@ -111,6 +111,26 @@ object AppLauncher {
         return launchIntentSafely(context, classic)
     }
 
+    /** Системная панель аудиоэффектов/эквалайзера — если прошивка предоставляет обработчик. */
+    fun openAudioEffectsPanel(context: Context): Boolean =
+        launchIntentSafely(context, Intent(MediaStore.ACTION_AUDIO_EFFECT_CONTROL_PANEL))
+
+    /** Системные настройки звука Android. */
+    fun openSoundSettings(context: Context): Boolean =
+        launchIntentSafely(context, Intent(Settings.ACTION_SOUND_SETTINGS))
+
+    /** Общие настройки Android. */
+    fun openAndroidSettings(context: Context): Boolean =
+        launchIntentSafely(context, Intent(Settings.ACTION_SETTINGS))
+
+    /** Экран предоставления доступа к уведомлениям (Notification Listener). */
+    fun openNotificationListenerSettings(context: Context): Boolean =
+        launchIntentSafely(context, Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+
+    /** Системные настройки яркости. */
+    fun openDisplaySettings(context: Context): Boolean =
+        launchIntentSafely(context, Intent(Settings.ACTION_DISPLAY_SETTINGS))
+
     /** Системные настройки Bluetooth (штатное приложение BT магнитолы). */
     fun openBluetoothSettings(context: Context): Boolean =
         launchIntentSafely(context, Intent(Settings.ACTION_BLUETOOTH_SETTINGS))

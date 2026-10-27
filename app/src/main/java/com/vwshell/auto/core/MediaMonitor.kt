@@ -8,12 +8,15 @@ import android.media.session.PlaybackState
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Монитор активной MediaSession системы.
  * Использует официальный API MediaSessionManager.getActiveSessions — требует
  * Notification Listener Access (пользователь может предоставить в настройках).
  * Никаких фиктивных данных: если сессии нет — слушатель получает null.
+ * getActiveSessions() выполняется на фоновом потоке — главный поток не блокируется.
  */
 class MediaMonitor private constructor(context: Context) {
 
@@ -21,6 +24,8 @@ class MediaMonitor private constructor(context: Context) {
     private val manager: MediaSessionManager? =
         appContext.getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val worker = Executors.newSingleThreadExecutor { r -> Thread(r, "vw-media-monitor").apply { isDaemon = true } }
+    private val refreshPending = AtomicBoolean(false)
 
     interface Listener {
         /** controller == null означает «источник отсутствует» (не выдумываем данные). */
@@ -45,7 +50,7 @@ class MediaMonitor private constructor(context: Context) {
         }
     }
 
-    private var currentController: MediaController? = null
+    @Volatile private var currentController: MediaController? = null
 
     fun addListener(l: Listener) {
         synchronized(listeners) { listeners.add(l) }
@@ -56,32 +61,49 @@ class MediaMonitor private constructor(context: Context) {
         synchronized(listeners) { listeners.remove(l) }
     }
 
+    /** Фоновое перечитание активных сессий; частые вызовы схлопываются в один ожидающий. */
     fun refresh() {
         if (manager == null) { dispatch(); return }
         if (!isNotificationServiceEnabled(appContext)) {
             hasNotificationAccess = false
-            detachController()
-            dispatch()
+            mainHandler.post { detachController(); dispatch() }
             return
         }
         hasNotificationAccess = true
-        try {
-            // QUERY_ALL_PACKAGES не запрашиваем; getActiveSessions бросает исключение без NLA —
-            // при наличии доступа возвращает активные сессии медиаприложений.
-            val self = componentNames(appContext)[0]
-            val sessions = manager.getActiveSessions(self)
-            val active = sessions.firstOrNull { it.playbackState?.state != PlaybackState.STATE_NONE }
-                ?: sessions.firstOrNull()
-            attachController(active)
-        } catch (s: SecurityException) {
-            hasNotificationAccess = false
-            Log.i(TAG, "No notification access; media source hidden")
-            detachController()
-        } catch (t: Throwable) {
-            Log.w(TAG, "getActiveSessions failed", t)
-            detachController()
+        if (refreshPending.compareAndSet(false, true)) {
+            worker.execute {
+                val sessions: List<MediaController>? = try {
+                    val self = componentNames(appContext)[0]
+                    manager.getActiveSessions(self)
+                } catch (s: SecurityException) {
+                    // Доступ отозван пользователем во время работы — интерфейс обновится честно.
+                    hasNotificationAccess = false
+                    Log.i(TAG, "No notification access; media source hidden")
+                    null
+                } catch (t: Throwable) {
+                    Log.w(TAG, "getActiveSessions failed", t)
+                    null
+                }
+                refreshPending.set(false)
+                mainHandler.post {
+                    if (sessions != null) {
+                        val active = sessions.firstOrNull { it.playbackState?.state != PlaybackState.STATE_NONE }
+                            ?: sessions.firstOrNull()
+                        attachController(active)
+                    } else {
+                        detachController()
+                    }
+                    dispatch()
+                }
+            }
         }
-        dispatch()
+    }
+
+    /** Синхронная проверка для UI-сценариев («нужен ли экран предоставления доступа»). */
+    fun checkAccessNow(): Boolean {
+        val enabled = isNotificationServiceEnabled(appContext)
+        hasNotificationAccess = enabled
+        return enabled
     }
 
     private fun attachController(c: MediaController?) {
@@ -120,8 +142,11 @@ class MediaMonitor private constructor(context: Context) {
             val flat = android.provider.Settings.Secure.getString(
                 context.contentResolver, COMPONENT_KEY) ?: return false
             val mine = ComponentName(context, ShellNotificationListener::class.java).flattenToString()
-            return flat.split(":").any { it == mine }
+            return flat.split(":").any { it == mine } ||
+                flat.split(":").any { it.endsWith("/$DEFAULT_COMP_SUFFIX") }
         }
+
+        private const val DEFAULT_COMP_SUFFIX = "com.vwshell.auto.core.ShellNotificationListener"
 
         private fun componentNames(context: Context) =
             listOf(ComponentName(context, ShellNotificationListener::class.java))

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/miniPlayerRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@color/vw_panel_bg"
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingEnd="@dimen/screen_padding"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/miniArt"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="12dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_album"
+        android:contentDescription="@string/media_source"/>
+
+    <LinearLayout
+        android:id="@+id/miniInfo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView android:id="@+id/miniTitle"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:singleLine="true" android:ellipsize="end"
+            android:textColor="@color/vw_text_primary" android:textSize="@dimen/body_text"/>
+
+        <TextView android:id="@+id/miniArtist"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:singleLine="true" android:ellipsize="end"
+            android:textColor="@color/vw_text_secondary" android:textSize="@dimen/small_text"/>
+    </LinearLayout>
+
+    <ImageButton android:id="@+id/btnMiniPrev" style="@style/VW.ControlButton.small"
+        android:src="@drawable/ic_prev" android:contentDescription="@string/media_prev"/>
+    <ImageButton android:id="@+id/btnMiniPlay" style="@style/VW.ControlButton.small"
+        android:src="@drawable/ic_play" android:contentDescription="@string/media_play"/>
+    <ImageButton android:id="@+id/btnMiniNext" style="@style/VW.ControlButton.small"
+        android:src="@drawable/ic_next" android:contentDescription="@string/media_next"/>
+</LinearLayout>

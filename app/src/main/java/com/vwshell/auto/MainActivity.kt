@@ -8,7 +8,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.vwshell.auto.R
@@ -20,12 +19,9 @@ import com.vwshell.auto.ui.SettingsFragment
 import com.vwshell.auto.ui.VehicleFragment
 import com.vwshell.auto.core.AppLauncher
 import com.vwshell.auto.core.KeyLogger
-import com.vwshell.auto.core.MediaMonitor
-import com.vwshell.auto.core.Prefs
 import com.vwshell.auto.databinding.ActivityMainBinding
 import com.vwshell.auto.widget.VWTile
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 /**
@@ -102,6 +98,15 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
         binding.tileNav.onTileClick = { openSection(NavigationFragment::class.java, R.string.tile_navigation) }
         binding.tileVehicle.onTileClick = { openSection(VehicleFragment::class.java, R.string.tile_vehicle) }
         binding.tileSettings.onTileClick = { openSection(SettingsFragment::class.java, R.string.tile_settings) }
+    }
+
+    /** Постоянная нижняя навигационная панель. */
+    private fun setupBottomNav() {
+        binding.bottomBar.navHome.setOnClickListener { showHome() }
+        binding.bottomBar.navRadio.setOnClickListener { openSection(RadioFragment::class.java) }
+        binding.bottomBar.navMedia.setOnClickListener { openSection(MediaFragment::class.java) }
+        binding.bottomBar.navApps.setOnClickListener { openSection(AppsFragment::class.java) }
+        binding.bottomBar.navSettings.setOnClickListener { openSection(SettingsFragment::class.java) }
     }
 
     // ==================== Навигация между разделами ====================

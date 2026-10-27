@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/vw_background">
+    <include layout="@layout/layout_section_header"/>
+    <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:clipToPadding="false" android:paddingBottom="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="@dimen/screen_padding">
+
+            <TextView style="@style/VW.SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingBottom="8dp" android:text="@string/sound_volume"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingVertical="8dp">
+                <TextView style="@style/VW.SettingTitle" android:text="@string/sound_stream_media"/>
+                <SeekBar android:id="@+id/sbMedia" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2" android:layout_marginStart="12dp"/>
+                <TextView android:id="@+id/valMedia" style="@style/VW.SettingValue"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingVertical="8dp">
+                <TextView style="@style/VW.SettingTitle" android:text="@string/sound_stream_call"/>
+                <SeekBar android:id="@+id/sbVoice" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2" android:layout_marginStart="12dp"/>
+                <TextView android:id="@+id/valVoice" style="@style/VW.SettingValue"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingVertical="8dp">
+                <TextView style="@style/VW.SettingTitle" android:text="@string/sound_stream_alarm"/>
+                <SeekBar android:id="@+id/sbAlarm" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2" android:layout_marginStart="12dp"/>
+                <TextView android:id="@+id/valAlarm" style="@style/VW.SettingValue"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingVertical="8dp">
+                <TextView style="@style/VW.SettingTitle" android:text="@string/sound_stream_notif"/>
+                <SeekBar android:id="@+id/sbNotification" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2" android:layout_marginStart="12dp"/>
+                <TextView android:id="@+id/valNotif" style="@style/VW.SettingValue"/>
+            </LinearLayout>
+
+            <TextView android:id="@+id/soundStreamsInfo" style="@style/VW.TextSecondary"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="8dp"/>
+
+            <View style="@style/VW.Divider"/>
+
+            <TextView style="@style/VW.SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingTop="16dp" android:paddingBottom="8dp" android:text="@string/sound_balance"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingVertical="8dp">
+                <TextView style="@style/VW.SettingTitle" android:text="@string/sound_balance_lr"/>
+                <TextView android:id="@+id/balLrValue" style="@style/VW.SettingValue"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:paddingVertical="8dp">
+                <TextView style="@style/VW.SettingTitle" android:text="@string/sound_balance_fr"/>
+                <TextView android:id="@+id/balFrValue" style="@style/VW.SettingValue"/>
+            </LinearLayout>
+            <!-- Честная маркировка: реальные ползунки баланса отсутствуют, потому что API стороннего приложения их не поддерживает -->
+            <TextView android:id="@+id/soundBalNote"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:background="@drawable/bg_panel" android:padding="14dp" android:layout_marginTop="6dp"
+                android:textColor="@color/vw_text_secondary" android:textSize="@dimen/small_text"
+                android:lineSpacingExtra="3dp"/>
+
+            <View style="@style/VW.Divider"/>
+
+            <TextView style="@style/VW.SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingTop="16dp" android:paddingBottom="8dp" android:text="@string/sound_dsp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnEqualizer"
+                    style="@style/VW.Button" android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_marginEnd="8dp" android:text="@string/sound_equalizer"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnSystemSoundSettings"
+                    style="@style/VW.Button" android:layout_width="0dp" android:layout_weight="1"
+                    android:text="@string/sound_system_settings"/>
+            </LinearLayout>
+
+            <TextView style="@style/VW.TextSecondary" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingTop="10dp" android:text="@string/sound_loudness_unavailable"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

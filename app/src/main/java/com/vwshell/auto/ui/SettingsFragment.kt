@@ -11,8 +11,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.vwshell.auto.BuildConfig
 import com.vwshell.auto.R
+import android.widget.Toast
 import com.vwshell.auto.core.AppLauncher
 import com.vwshell.auto.core.KeyLogger
+import com.vwshell.auto.core.MediaMonitor
 import com.vwshell.auto.core.Prefs
 
 /** Настройки оболочки: назначение приложений, поведение, информация. Строгий OEM-стиль. */
@@ -40,6 +42,10 @@ class SettingsFragment : BaseSectionFragment() {
 
         fun refreshValues() {
             valNav.text = labelFor(prefs.navAppPackage)
+            view.findViewById<TextView>(R.id.valClockFormat).setText(
+                if (prefs.clock24h) R.string.settings_clock_24 else R.string.settings_clock_12)
+            val vna = view.findViewById<TextView>(R.id.valNotifAccess)
+            vna.setText(if (MediaMonitor.isNotificationServiceEnabled(requireContext())) R.string.open else R.string.unavailable)
             valMedia.text = labelFor(prefs.mediaAppPackage)
             valRadio.text = labelFor(prefs.radioAppPackage)
             valPhone.text = labelFor(prefs.phoneAppPackage)
@@ -62,15 +68,65 @@ class SettingsFragment : BaseSectionFragment() {
             pickApp(getString(R.string.settings_phone_app)) { pkg -> prefs.phoneAppPackage = pkg; refreshValues() }
         }
 
+        // Яркость: переход к системным настройкам дисплея; прямая запись — только при ACTION_SYSTEM_SETTINGS
+        // (специальный доступ, не запрашиваем без необходимости).
         view.findViewById<View>(R.id.rowBrightness).setOnClickListener {
             val v = view.findViewById<TextView>(R.id.valBrightness)
-            if (canWriteSystemSettings()) {
-                try {
-                    startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                } catch (_: Exception) { v.setText(R.string.settings_brightness_unavailable) }
-            } else {
+            if (!AppLauncher.openDisplaySettings(requireContext()))
                 v.setText(R.string.settings_brightness_unavailable)
-            }
+        }
+
+        // Формат времени 12/24
+        view.findViewById<View>(R.id.rowClockFormat).setOnClickListener {
+            prefs.clock24h = !prefs.clock24h
+            refreshValues()
+        }
+
+        // Раздел «Звук» из настроек
+        view.findViewById<View>(R.id.rowSoundSection).setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.vw_enter, R.anim.vw_exit)
+                .replace(R.id.sectionContainer, SoundFragment::class.java, null, SoundFragment::class.java.name)
+                .addToBackStack(null)
+                .commit()
+        }
+
+        // Показать скрытые приложения
+        view.findViewById<View>(R.id.rowResetHiddenApps).setOnClickListener {
+            prefs.setHiddenApps(emptySet())
+            Toast.makeText(requireContext(), R.string.apps_hidden_cleared, Toast.LENGTH_SHORT).show()
+        }
+
+        // Системные экраны: каждый через проверяемый Intent (на разных прошивках могут отсутствовать)
+        view.findViewById<View>(R.id.rowAndroidSettings).setOnClickListener {
+            openOrToast { AppLauncher.openAndroidSettings(requireContext()) }
+        }
+        view.findViewById<View>(R.id.rowManageApps).setOnClickListener {
+            openOrToast { AppLauncher.launchIntentSafely(requireContext(),
+                Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
+        view.findViewById<View>(R.id.rowBluetooth).setOnClickListener {
+            openOrToast { AppLauncher.openBluetoothSettings(requireContext()) }
+        }
+        view.findViewById<View>(R.id.rowNotifAccess).setOnClickListener {
+            openOrToast { AppLauncher.openNotificationListenerSettings(requireContext()) }
+        }
+        view.findViewById<View>(R.id.rowSoundSettings).setOnClickListener {
+            openOrToast { AppLauncher.openSoundSettings(requireContext()) }
+        }
+
+        // Сброс настроек оболочки с подтверждением
+        view.findViewById<View>(R.id.rowResetShell).setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.settings_reset)
+                .setMessage(R.string.settings_reset_confirm)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    Prefs.get(requireContext()).resetAll(requireContext())
+                    Toast.makeText(requireContext(), R.string.settings_reset_done, Toast.LENGTH_SHORT).show()
+                    activity?.recreate()
+                }
+                .setNegativeButton(R.string.no, null)
+                .show()
         }
 
         view.findViewById<View>(R.id.rowSetHome).setOnClickListener {
@@ -94,6 +150,17 @@ class SettingsFragment : BaseSectionFragment() {
 
         view.findViewById<TextView>(R.id.aboutText).text =
             getString(R.string.settings_about_text, BuildConfig.VERSION_NAME)
+    }
+
+    private fun openOrToast(action: () -> Boolean) {
+        if (!action()) Toast.makeText(requireContext(), R.string.settings_screen_missing, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // После возвращения из системных настроек доступа обновляем индикатор честно.
+        view?.findViewById<TextView>(R.id.valNotifAccess)?.setText(
+            if (MediaMonitor.isNotificationServiceEnabled(requireContext())) R.string.open else R.string.unavailable)
     }
 
     private fun canWriteSystemSettings(): Boolean =

@@ -19,6 +19,7 @@ import com.vwshell.auto.R
 import com.vwshell.auto.core.AppLauncher
 import com.vwshell.auto.core.MediaMonitor
 import com.vwshell.auto.core.Prefs
+import com.vwshell.auto.core.ShellState
 
 /**
  * Медиа: управление реальным воспроизведением через Android MediaSession/MediaController.
@@ -27,7 +28,7 @@ import com.vwshell.auto.core.Prefs
  * Транспортные действия выполняются только если текущая сессия их поддерживает
  * (проверка PlaybackState.ACTION_* — см. MediaSessionLogic).
  */
-class MediaFragment : BaseSectionFragment(), MediaMonitor.Listener {
+class MediaFragment : BaseSectionFragment(), ShellState.Listener {
 
     override val titleRes = R.string.media_title
 
@@ -68,20 +69,22 @@ class MediaFragment : BaseSectionFragment(), MediaMonitor.Listener {
 
     override fun onResume() {
         super.onResume()
-        MediaMonitor.get(requireContext()).addListener(this)
+        ShellState.addListener(this, this)
         // При возврате из системных настроек доступа повторно проверяем разрешение и обновляем UI.
-        MediaMonitor.get(requireContext()).refresh()
+        ShellState.refresh()
     }
 
     override fun onPause() {
-        MediaMonitor.get(requireContext()).removeListener(this)
+        ShellState.removeListener(this)
         super.onPause()
     }
 
-    override fun onActiveSource(c: MediaController?, sourcePackage: String?) {
+    override fun onMediaStateChanged(snap: ShellState.MediaSnapshot?) {
         if (!isAdded || !::trackText.isInitialized) return
+        val c = snap?.controller
         controller = c
-        val monitor = MediaMonitor.get(requireContext())
+        val sourcePackage = snap?.sourcePackage
+        val hasAccess = MediaMonitor.isNotificationServiceEnabled(requireContext())
         if (c == null) {
             sourceIcon.visibility = View.GONE
             albumArt.visibility = View.GONE
@@ -92,9 +95,9 @@ class MediaFragment : BaseSectionFragment(), MediaMonitor.Listener {
             playBtn.alpha = 0.35f
             prevBtn.alpha = 0.35f
             nextBtn.alpha = 0.35f
-            grantBtn.visibility = if (monitor.hasNotificationAccess) View.GONE else View.VISIBLE
+            grantBtn.visibility = if (hasAccess) View.GONE else View.VISIBLE
             pickBtn.visibility = View.VISIBLE
-            statusText.setText(if (monitor.hasNotificationAccess) R.string.media_no_session else R.string.media_need_access)
+            statusText.setText(if (hasAccess) R.string.media_no_session else R.string.media_need_access)
             return
         }
         grantBtn.visibility = View.GONE

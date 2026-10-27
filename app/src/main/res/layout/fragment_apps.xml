@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/vw_background">
+    <include layout="@layout/layout_section_header"/>
+    <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
+
+    <EditText android:id="@+id/appsSearch"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_margin="@dimen/screen_padding"
+        android:background="@drawable/bg_field"
+        android:padding="14dp"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="10dp"
+        android:hint="@string/apps_search_hint"
+        android:textColorHint="@color/vw_text_disabled"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="@dimen/body_text"
+        android:singleLine="true"
+        android:inputType="text"/>
+
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/appsGrid"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:paddingStart="@dimen/screen_padding" android:paddingEnd="@dimen/screen_padding"
+            android:clipToPadding="false"/>
+        <TextView android:id="@+id/appsEmpty"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:gravity="center" android:visibility="gone"
+            android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text"
+            android:padding="24dp" android:text="@string/apps_empty"/>
+    </FrameLayout>
+</LinearLayout>

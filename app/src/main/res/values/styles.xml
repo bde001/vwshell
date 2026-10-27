@@ -139,6 +139,35 @@
         <item name="android:layout_height">1dp</item>
         <item name="android:background">@drawable/divider_h</item>
     </style>
+    <style name="VW.NavItem" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:background">@drawable/bg_row</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="VW.NavIcon" parent="">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:tint">@drawable/selector_nav_item</item>
+        <item name="android:contentDescription">@null</item>
+    </style>
+
+    <style name="VW.NavLabel" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@drawable/selector_nav_item</item>
+    </style>
+
     <style name="VW.Tile" parent="">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
