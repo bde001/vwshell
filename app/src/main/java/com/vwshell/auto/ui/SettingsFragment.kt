@@ -68,12 +68,18 @@ class SettingsFragment : BaseSectionFragment() {
             pickApp(getString(R.string.settings_phone_app)) { pkg -> prefs.phoneAppPackage = pkg; refreshValues() }
         }
 
-        // Яркость: переход к системным настройкам дисплея; прямая запись — только при ACTION_SYSTEM_SETTINGS
-        // (специальный доступ, не запрашиваем без необходимости).
+        // Яркость: предпочтительно — системные настройки дисплея. Прямая регулировка доступна
+        // только при специальном доступе WRITE_SETTINGS (Android 13: ACTION_MANAGE_WRITE_SETTINGS,
+        // это НЕ runtime-разрешение). Без доступа показываем честное состояние, ползунок не создаём.
         view.findViewById<View>(R.id.rowBrightness).setOnClickListener {
             val v = view.findViewById<TextView>(R.id.valBrightness)
-            if (!AppLauncher.openDisplaySettings(requireContext()))
+            if (canWriteSystemSettings()) {
+                openOrToast { AppLauncher.openDisplaySettings(requireContext()) }
+            } else if (openOrToastWriteSettings()) {
+                v.setText(R.string.settings_write_access_granted_explain)
+            } else {
                 v.setText(R.string.settings_brightness_unavailable)
+            }
         }
 
         // Формат времени 12/24
@@ -165,6 +171,14 @@ class SettingsFragment : BaseSectionFragment() {
 
     private fun canWriteSystemSettings(): Boolean =
         Settings.System.canWrite(requireContext())
+
+    /** Открывает системный экран выдачи WRITE_SETTINGS (специальный доступ Android 6+/13). */
+    private fun openOrToastWriteSettings(): Boolean = try {
+        val i = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,
+            Uri.parse("package:${requireContext().packageName}"))
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(i); true
+    } catch (_: Exception) { false }
 
     private fun systemBrightnessPercent(): Int? = try {
         val cur = Settings.System.getInt(requireContext().contentResolver, Settings.System.SCREEN_BRIGHTNESS)

@@ -84,6 +84,7 @@
     <string name="settings_display">Экран</string>
     <string name="settings_brightness">Яркость</string>
     <string name="settings_brightness_unavailable">Системная яркость недоступна без привилегий OEM-прошивки. Используйте настройки устройства.</string>
+    <string name="settings_write_access_granted_explain">Открыт экран выдачи доступа «Изменение системных настроек». После предоставления вернитесь в оболочку — регулировка яркости станет доступна.</string>
     <string name="settings_behavior">Поведение оболочки</string>
     <string name="settings_always_home">Всегда быть домашним экраном</string>
     <string name="settings_set_home">Назначить оболочку домашним экраном</string>

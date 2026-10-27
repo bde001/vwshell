@@ -39,7 +39,7 @@ abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker,
     }
 
     /** Обновление часов по системному событию TIME_TICK (см. MainActivity) — без самодельного поллинга. */
-    fun refreshClock() = updateClock()
+    override fun refreshClock() = updateClock()
 
     protected fun updateClock() {
         view?.findViewById<TextView>(R.id.headerClock)?.text = clockFormat.format(Date())

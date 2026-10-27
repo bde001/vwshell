@@ -261,7 +261,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener {
         mp.miniPlayerRoot.visibility = View.VISIBLE
         mp.miniTitle.text = snap.title ?: getString(R.string.media_track_unknown)
         mp.miniArtist.text = snap.artist ?: ""
-        mp.miniInfo.text = snap.album ?: ""
+        // miniInfo — контейнер LinearLayout (view_mini_player.xml), не TextView: текст присваивать нельзя.
         if (snap.artwork != null) {
             mp.miniArt.imageTintList = null
             mp.miniArt.setImageBitmap(snap.artwork)

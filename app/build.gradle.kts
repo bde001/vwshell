@@ -10,7 +10,10 @@ android {
     defaultConfig {
         applicationId = "com.vwshell.auto"
         minSdk = 29
-        targetSdk = 30 // Целевой SDK 30: стабильная работа на Android 10–12 без new-SDK ограничений
+        // Целевой SDK 33 — обязательная адаптация под Android 13 (API 33).
+        // BLUETOOTH_CONNECT/READ_CONTACTS запрашиваются через Activity Result API по месту
+        // использования; Notification Listener Access — специальный доступ системы.
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0.0"
         resourceConfigurations += listOf("ru", "en")
