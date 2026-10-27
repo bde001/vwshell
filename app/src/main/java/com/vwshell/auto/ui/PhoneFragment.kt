@@ -38,12 +38,23 @@ class PhoneFragment : BaseSectionFragment() {
     private val requestPerms = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
+        // После ответа пользователя повторно обновляем состояние интерфейса.
         when (mode) {
             Mode.CONTACTS -> if (result[Manifest.permission.READ_CONTACTS] == true) loadContacts()
                 else showDenied()
             Mode.CALLS -> if (result[Manifest.permission.READ_CALL_LOG] == true) loadCalls()
                 else showDenied()
             else -> {}
+        }
+    }
+
+    /** Runtime-запрос BLUETOOTH_CONNECT только при явном использовании Bluetooth-функций (Android 12+). */
+    private val requestBtPerm = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        view?.let { updateBtStatus(it) }
+        if (!granted) {
+            Toast.makeText(requireContext(), R.string.phone_bt_perm_denied, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -66,8 +77,10 @@ class PhoneFragment : BaseSectionFragment() {
         list.adapter = adapter
 
         view.findViewById<View>(R.id.btnBtSettings).setOnClickListener {
-            if (!AppLauncher.openBluetoothSettings(requireContext()))
-                Toast.makeText(requireContext(), R.string.phone_no_bt, Toast.LENGTH_SHORT).show()
+            ensureBluetoothPermissionThen {
+                if (!AppLauncher.openBluetoothSettings(requireContext()))
+                    Toast.makeText(requireContext(), R.string.phone_no_bt, Toast.LENGTH_SHORT).show()
+            }
         }
         view.findViewById<View>(R.id.btnDialpad).setOnClickListener {
             if (!AppLauncher.launchDialer(requireContext(), Prefs.get(requireContext()).phoneAppPackage))
@@ -75,11 +88,15 @@ class PhoneFragment : BaseSectionFragment() {
         }
         view.findViewById<View>(R.id.btnCallLog).setOnClickListener {
             mode = Mode.CALLS
-            if (granted(Manifest.permission.READ_CALL_LOG)) loadCalls() else requestPerms.launch(arrayOf(Manifest.permission.READ_CALL_LOG))
+            if (granted(Manifest.permission.READ_CALL_LOG)) loadCalls()
+            else if (shouldShowRationale(Manifest.permission.READ_CALL_LOG)) requestPerms.launch(arrayOf(Manifest.permission.READ_CALL_LOG))
+            else openSystemDialerInstead(R.string.phone_calllog_limited)
         }
         view.findViewById<View>(R.id.btnContacts).setOnClickListener {
             mode = Mode.CONTACTS
-            if (granted(Manifest.permission.READ_CONTACTS)) loadContacts() else requestPerms.launch(arrayOf(Manifest.permission.READ_CONTACTS))
+            if (granted(Manifest.permission.READ_CONTACTS)) loadContacts()
+            else if (shouldShowRationale(Manifest.permission.READ_CONTACTS)) requestPerms.launch(arrayOf(Manifest.permission.READ_CONTACTS))
+            else showDenied()
         }
 
         updateBtStatus(view)
@@ -87,6 +104,32 @@ class PhoneFragment : BaseSectionFragment() {
 
     private fun granted(p: String) =
         ContextCompat.checkSelfPermission(requireContext(), p) == PackageManager.PERMISSION_GRANTED
+
+    /**
+     * false — пользователь отказал с «больше не спрашивать»: повторный запрос системно игнорируется,
+     * вместо него показываем понятное объяснение и предлагаем штатное приложение.
+     */
+    private fun shouldShowRationale(permission: String): Boolean =
+        !androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(
+            requireActivity(), permission) ||
+        !requestedOnce.contains(permission).also { requestedOnce.add(permission) }
+
+    private val requestedOnce = HashSet<String>()
+
+    private fun ensureBluetoothPermissionThen(after: () -> Unit) {
+        if (AppLauncher.hasBluetoothPermission(requireContext())) { after(); return }
+        if (AppLauncher.needsBluetoothPermission()) {
+            requestBtPerm.launch(Manifest.permission.BLUETOOTH_CONNECT)
+        } else after()
+    }
+
+    /** Журнал вызовов может быть недоступен без роли Dialer — открываем штатное приложение телефона. */
+    private fun openSystemDialerInstead(noteRes: Int) {
+        emptyText.visibility = View.VISIBLE
+        emptyText.setText(noteRes)
+        adapter.submit(emptyList())
+        AppLauncher.launchDialer(requireContext(), Prefs.get(requireContext()).phoneAppPackage)
+    }
 
     private fun showDenied() {
         emptyText.visibility = View.VISIBLE
@@ -98,7 +141,7 @@ class PhoneFragment : BaseSectionFragment() {
         val bt = AppLauncher.bluetoothState(requireContext())
         val tv = view.findViewById<TextView>(R.id.btStatus)
         when (bt) {
-            null -> { tv.visibility = View.GONE } // адаптера нет / нет доступа — скрываем, не выдумываем
+            null -> { tv.visibility = View.GONE } // адаптера нет / разрешение не выдано — скрываем, не выдумываем
             true -> { tv.visibility = View.VISIBLE; tv.setText(R.string.phone_bt_on) }
             false -> { tv.visibility = View.VISIBLE; tv.setText(R.string.phone_bt_off) }
         }

@@ -7,6 +7,10 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.Settings
+import androidx.annotation.RequiresPermission
+import androidx.core.content.ContextCompat
+import android.Manifest
+import android.os.Build
 import android.telephony.TelephonyManager
 import android.util.Log
 
@@ -137,15 +141,43 @@ object AppLauncher {
         context.packageManager.hasSystemFeature("android.hardware.fm")
             || context.packageManager.hasSystemFeature("android.hardware.radio.fm")
 
-    /** Состояние Bluetooth: null — адаптера нет/нет доступа; иначе включён ли. */
-    @Suppress("MissingPermission")
-    fun bluetoothState(context: Context): Boolean? {
+    /** Название установленного приложения по пакету или null. */
+    fun appLabel(context: Context, packageName: String?): String? {
+        if (packageName == null) return null
         return try {
-            val mgr = context.getSystemService(Context.BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager
-            mgr?.adapter?.isEnabled
-        } catch (s: SecurityException) {
-            null
-        } catch (t: Throwable) { null }
+            val ai = context.packageManager.getApplicationInfo(packageName, 0)
+            context.packageManager.getApplicationLabel(ai).toString()
+        } catch (_: Exception) { null }
+    }
+
+    /**
+     * Состояние Bluetooth: null — адаптера нет / нет доступа (BLUETOOTH_CONNECT не выдано);
+     * иначе — включён ли адаптер. Только реально доступные данные.
+     */
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun adapterEnabled(context: Context): Boolean? = try {
+        val mgr = context.getSystemService(Context.BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager
+        mgr?.adapter?.isEnabled
+    } catch (s: SecurityException) {
+        null
+    } catch (t: Throwable) { null }
+
+    /** Требуется ли runtime-разрешение BLUETOOTH_CONNECT на этом устройстве (Android 12+). */
+    fun needsBluetoothPermission(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    /** Есть ли уже разрешение BLUETOOTH_CONNECT (на Android 10/11 — всегда «есть», если объявлено в манифесте). */
+    fun hasBluetoothPermission(context: Context): Boolean =
+        !needsBluetoothPermission() ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) ==
+                PackageManager.PERMISSION_GRANTED
+
+    /**
+     * Безопасное чтение состояния Bluetooth: без разрешения возвращает null — индикатор скрывается,
+     * защищённые API не вызываются, SecurityException невозможен.
+     */
+    fun bluetoothState(context: Context): Boolean? {
+        if (!hasBluetoothPermission(context)) return null
+        return adapterEnabled(context)
     }
 
     /** Уровень сигнала сотовой сети в реальном времени или null, если данных нет. */

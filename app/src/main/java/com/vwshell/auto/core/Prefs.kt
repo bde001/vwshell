@@ -36,17 +36,11 @@ class Prefs private constructor(context: Context) {
         return added
     }
 
-    /** Пользовательские сохранённые частоты как «пресеты» списка станций. */
-    fun presets(): List<Int> = favorites().mapNotNull { it.toIntOrNull() }.sortedDescending()
+    /** Пользовательские пресеты = реально сохранённые избранные частоты (десятые доли МГц). */
+    fun presets(): List<Int> = favorites().mapNotNull { it.toIntOrNull() }.sorted()
 
-    fun rememberPreset(freqKhz: Int) {
-        val set = HashSet(sp.getStringSet(KEY_PRESETS, emptySet()) ?: emptySet())
-        set.add(freqKhz.toString())
-        sp.edit().putStringSet(KEY_PRESETS, set).apply()
-    }
-
-    fun lastFreqKhz(): Int? = sp.getInt(KEY_LAST_FREQ, -1).let { if (it < 0) null else it }
-    fun setLastFreq(freqKhz: Int) = sp.edit().putInt(KEY_LAST_FREQ, freqKhz).apply()
+    fun lastFreqTenths(): Int? = sp.getInt(KEY_LAST_FREQ, -1).let { if (it < 0) null else it }
+    fun setLastFreq(freqTenths: Int) = sp.edit().putInt(KEY_LAST_FREQ, freqTenths).apply()
 
     companion object {
         private const val KEY_NAV = "nav_app"
@@ -54,7 +48,6 @@ class Prefs private constructor(context: Context) {
         private const val KEY_RADIO = "radio_app"
         private const val KEY_PHONE = "phone_app"
         private const val KEY_FAV = "fm_favorites"
-        private const val KEY_PRESETS = "fm_presets"
         private const val KEY_LAST_FREQ = "fm_last_freq"
 
         @Volatile private var instance: Prefs? = null

@@ -55,6 +55,12 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
         setupTiles()
         updateStatusIcons()
         MediaMonitor.get(this).addListener(this)
+
+        // Восстановление состояния после поворота/пробуждения/уничтожения Activity:
+        // FragmentManager сам восстановит фрагмент раздела — синхронизируем UI с ним.
+        savedSectionTag = savedInstanceState?.getString(KEY_SECTION_TAG)
+        currentSectionTag = savedSectionTag
+        if (savedInstanceState != null && savedSectionTag == null) showHome()
     }
 
     /** Полноэкранный OEM-режим; системные жесты остаются рабочими (BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE). */
@@ -104,32 +110,66 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
 
     private fun openSection(cls: Class<out Fragment>, titleRes: Int) {
         val tag = cls.name
-        if (currentSectionTag == tag) return
+        if (currentSectionTag == tag &&
+            supportFragmentManager.findFragmentByTag(tag) is BaseSectionMarker) return
+        // replace() удаляет предыдущий фрагмент раздела — лишние экземпляры не накапливаются.
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.vw_enter, R.anim.vw_exit)
-            .replace(R.id.sectionContainer, EmptyFragment::class.java, null, null)
+            .replace(R.id.sectionContainer, cls, null, tag)
             .commit()
+        binding.homeContainer.visibility = View.INVISIBLE
         binding.sectionContainer.visibility = View.VISIBLE
         binding.topBar.modeText.setText(titleRes)
         currentSectionTag = tag
+        savedSectionTag = tag
     }
 
     fun showHome() {
-        supportFragmentManager.beginTransaction()
-            .setCustomAnimations(R.anim.vw_enter, R.anim.vw_exit)
-            .replace(R.id.sectionContainer, EmptyFragment::class.java, null, null)
-            .commit()
+        if (currentSectionTag != null || savedSectionTag != null) {
+            supportFragmentManager.beginTransaction()
+                .setCustomAnimations(0, R.anim.vw_exit)
+                .replace(R.id.sectionContainer, EmptyFragment::class.java, null, null)
+                .commit()
+        } else {
+            supportFragmentManager.executePendingTransactions()
+        }
         binding.sectionContainer.visibility = View.GONE
+        binding.homeContainer.visibility = View.VISIBLE
         binding.topBar.modeText.setText(R.string.default_mode)
         currentSectionTag = null
+        savedSectionTag = null
     }
 
-    /** Пустый fragment-заглушка для очистки контейнера разделов. */
+    /** Сохраняется между пересозданиями Activity (поворот/пробуждение/убийство процесса). */
+    private var savedSectionTag: String? = null
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(KEY_SECTION_TAG, currentSectionTag)
+    }
+
+    /** Пустой fragment-заглушка для очистки контейнера разделов. */
     class EmptyFragment : Fragment()
+
+    /** Маркер реальных разделов (для проверки состояния после восстановления Activity). */
+    interface BaseSectionMarker
+
+    /** Восстановление открытого раздела после конфигурационных изменений. Вызывается из фрагмента. */
+    fun onSectionRestored(tag: String?, titleRes: Int) {
+        if (tag == null) return
+        currentSectionTag = tag
+        binding.sectionContainer.visibility = View.VISIBLE
+        binding.homeContainer.visibility = View.INVISIBLE
+        binding.topBar.modeText.setText(titleRes)
+    }
 
     override fun onBackPressed() {
         if (currentSectionTag != null) showHome()
         // На HOME-экране Back не обрабатывается — как в штатной системе.
+    }
+
+    companion object {
+        private const val KEY_SECTION_TAG = "vw_section_tag"
     }
 
     // ==================== Верхняя/нижняя панель ====================

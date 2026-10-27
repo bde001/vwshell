@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Строка сохранённой FM-станции: частота, тонкая красная линия у выбранной -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_row"
+    android:focusable="true"
+    android:clickable="true">
+
+    <TextView
+        android:id="@+id/stationFreq"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/list_row_height"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingEnd="@dimen/screen_padding"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="@dimen/title_text"
+        android:fontFamily="sans-serif-light" />
+
+    <View
+        android:id="@+id/stationMarker"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@drawable/row_selected_marker"
+        android:visibility="invisible" />
+</LinearLayout>

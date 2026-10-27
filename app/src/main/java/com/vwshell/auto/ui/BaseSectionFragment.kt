@@ -11,7 +11,7 @@ import java.util.Date
 import java.util.Locale
 
 /** Общий каркас раздела: заголовок, кнопка «назад», часы в шапке. */
-abstract class BaseSectionFragment : Fragment() {
+abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker {
 
     protected abstract val titleRes: Int
 
@@ -21,6 +21,8 @@ abstract class BaseSectionFragment : Fragment() {
         view.findViewById<View>(R.id.btnBack).setOnClickListener {
             (activity as? MainActivity)?.showHome() ?: activity?.onBackPressedDispatcher?.onBackPressed()
         }
+        // Раздел мог быть восстановлен после поворота/пробуждения — синхронизируем верхнюю панель и состояние HOME.
+        (activity as? MainActivity)?.onSectionRestored(javaClass.name, titleRes)
     }
 
     private val clockFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
