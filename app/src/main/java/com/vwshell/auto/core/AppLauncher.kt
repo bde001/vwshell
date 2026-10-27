@@ -113,7 +113,7 @@ object AppLauncher {
 
     /** Системная панель аудиоэффектов/эквалайзера — если прошивка предоставляет обработчик. */
     fun openAudioEffectsPanel(context: Context): Boolean =
-        launchIntentSafely(context, Intent(MediaStore.ACTION_AUDIO_EFFECT_CONTROL_PANEL))
+        launchIntentSafely(context, Intent("android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL"))
 
     /** Системные настройки звука Android. */
     fun openSoundSettings(context: Context): Boolean =

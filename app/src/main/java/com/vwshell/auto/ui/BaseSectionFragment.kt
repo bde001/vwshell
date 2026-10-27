@@ -16,7 +16,8 @@ interface BaseSectionHeaderClock {
 }
 
 /** Общий каркас раздела: заголовок, кнопка «назад», часы в шапке. */
-abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker, BaseSectionHeaderClock {
+abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker,
+    MainActivity.BaseSectionHeaderClockHolder, BaseSectionHeaderClock {
 
     protected abstract val titleRes: Int
 

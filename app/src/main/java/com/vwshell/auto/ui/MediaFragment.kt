@@ -115,7 +115,7 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener {
             ?: getString(R.string.media_unknown_artist)
         // Обложка: только реально предоставленная сессией (BITMAP_ARTWORK или BITMAP_ALBUM_ART),
         // иначе — приглушённая векторная заглушка, без фальшивых картинок.
-        val bmp: Bitmap? = md?.getBitmap(MediaMetadata.METADATA_KEY_ARTWORK)
+        val bmp: Bitmap? = md?.getBitmap(MediaMetadata.METADATA_KEY_ART)
             ?: md?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
         albumArt.visibility = View.VISIBLE
         if (bmp != null) {

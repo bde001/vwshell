@@ -36,7 +36,7 @@ object ShellState {
             actions and PlaybackState.ACTION_PLAY_PAUSE != 0L
         fun canSkipNext() = actions and PlaybackState.ACTION_SKIP_TO_NEXT != 0L
         fun canSkipPrev() = actions and PlaybackState.ACTION_SKIP_TO_PREVIOUS != 0L
-        fun canSeek() = actions and PlaybackState.ACTION_SEEK != 0L
+        fun canSeek() = actions and PlaybackState.ACTION_SEEK_TO != 0L
     }
 
     interface Listener {
@@ -119,7 +119,8 @@ object ShellState {
             title = md?.getString(MediaMetadata.METADATA_KEY_TITLE),
             artist = md?.getString(MediaMetadata.METADATA_KEY_ARTIST),
             album = md?.getString(MediaMetadata.METADATA_KEY_ALBUM),
-            artwork = md?.getBitmap(MediaMetadata.METADATA_KEY_ARTWORK)
+            // Реальные обложки: только если сессия передала битмап (METADATA_KEY_ART/ALBUM_ART).
+            artwork = md?.getBitmap(MediaMetadata.METADATA_KEY_ART)
                 ?: md?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART),
             playing = ps?.state == PlaybackState.STATE_PLAYING || ps?.state == PlaybackState.STATE_BUFFERING,
             actions = ps?.actions ?: 0L,

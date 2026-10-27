@@ -6,6 +6,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/** Действие рулевой клавиши (алиас вне object — вложенные typealias запрещены Kotlin). */
+typealias SteeringAction = com.vwshell.auto.core.SteeringKeyMap.Action
+
 /**
  * Расширяемый журнал аппаратных клавиш.
  * Стандартные коды (громкость, треки, play/pause, home) обрабатываются системой/MediaSession.
@@ -17,10 +20,8 @@ object KeyLogger {
     private val entries = ArrayDeque<String>()
     private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.US)
 
-    typealias Action = SteeringKeyMap.Action
-
     /** Действие для клавиши (расширяемая карта руля/пульта). */
-    fun mapAction(keyCode: Int): Action = SteeringKeyMap.map(keyCode)
+    fun mapAction(keyCode: Int): SteeringAction = SteeringKeyMap.map(keyCode)
 
     /** Возвращает true, если код известен и уже обработан стандартным механизмом. */
     fun isKnownKeyCode(keyCode: Int): Boolean = keyCode in KNOWN_KEYS
