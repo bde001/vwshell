@@ -26,13 +26,17 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.vwshell.auto.core.AppLauncher
 import com.vwshell.auto.core.KeyLogger
+import com.vwshell.auto.core.PlayerSource
 import com.vwshell.auto.core.Prefs
 import com.vwshell.auto.core.ShellState
 import com.vwshell.auto.databinding.ActivityMainBinding
 import com.vwshell.auto.media.LocalPlayerEngine
+import com.vwshell.auto.ui.AppsFragment
+import com.vwshell.auto.ui.AppPickerDialog
 import com.vwshell.auto.ui.BaseSectionFragment
 import com.vwshell.auto.ui.BaseSectionHeaderClockHolder
 import com.vwshell.auto.ui.MediaFragment
+import com.vwshell.auto.ui.NavigationFragment
 import com.vwshell.auto.ui.PhoneFragment
 import com.vwshell.auto.ui.RadioFragment
 import com.vwshell.auto.ui.SettingsFragment
@@ -89,6 +93,8 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
         ShellState.load(this)
         ShellState.init(this)
         ShellState.addListener(this, this)
+        PlayerSource.restoreFromPrefs(this)
+        PlayerSource.addListener(playerSourceListener)
 
         binding.topBar.modeText.text = "" // на главном экране заголовок раздела пуст
 
@@ -122,6 +128,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
     }
 
     override fun onDestroy() {
+        PlayerSource.removeListener(playerSourceListener)
         ShellState.removeListener(this)
         super.onDestroy()
     }
@@ -184,6 +191,8 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
     private data class TileSpec(
         val icon: Int,
         @StringRes val label: Int,
+        val highlight: (() -> Boolean)? = null,
+        val onLong: (() -> Unit)? = null,
         val action: () -> Unit
     )
 
@@ -192,26 +201,84 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
             openSection(RadioFragment::class.java, R.string.tile_radio) },
         TileSpec(R.drawable.ic_media, R.string.tile_media) {
             openSection(MediaFragment::class.java, R.string.tile_media) },
-        TileSpec(R.drawable.ic_phone, R.string.tile_phone) {
-            openSection(PhoneFragment::class.java, R.string.tile_phone) },
+        // Bluetooth: переключение источника плеера (локальный ⇄ внешняя медиасессия).
+        // Заменяет прежнюю кнопку «Телефон»; раздел «Телефон» доступен из плитки «Приложения».
+        // Красная подсветка #E3182D — когда активен внешний источник (общее состояние PlayerSource).
+        TileSpec(R.drawable.ic_bluetooth, R.string.tile_bluetooth_source,
+            highlight = { PlayerSource.kind == PlayerSource.Kind.EXTERNAL }) {
+            if (!PlayerSource.toggle(this)) {
+                Toast.makeText(this, R.string.media_no_external_session, Toast.LENGTH_LONG).show()
+            }
+        },
         TileSpec(R.drawable.ic_nav, R.string.tile_navigation) {
             // Прямой запуск Google Maps без промежуточного экрана выбора.
             if (!AppLauncher.launchMapsDirect(this, Prefs.get(this).navAppPackage)) {
                 openInstallOrToast(Prefs.get(this).navAppPackage ?: "com.google.android.apps.maps",
                     R.string.nav_none)
             } },
-        TileSpec(R.drawable.ic_car, R.string.tile_vehicle) {
-            // Прямой запуск Car Scanner ELM OBD2; никаких фиктивных данных телеметрии.
-            if (!AppLauncher.launchCarScanner(this, Prefs.get(this).vehicleAppPackage)) {
-                openInstallOrToast(Prefs.get(this).vehicleAppPackage ?: Prefs.DEFAULT_VEHICLE_PKG,
-                    R.string.vehicle_app_missing)
-            } },
+        TileSpec(R.drawable.ic_car, R.string.tile_vehicle,
+            onLong = { showVehicleAppChooser() }) {
+            launchVehicleApp() },
         TileSpec(R.drawable.ic_settings, R.string.tile_settings) {
             openSection(SettingsFragment::class.java, R.string.tile_settings) }
     )
 
-    /** Вторая страница: подготовленная структура для будущих плиток (пустые ячейки 3x2). */
-    private fun pageTwoTiles(): List<TileSpec> = emptyList()
+    /**
+     * Плитка «Автомобиль»: запуск ВЫБРАННОГО пользователем диагностического (OBD2) приложения.
+     * Выбор сохраняется в Prefs; при удалении приложения выбор очищается и показывается диалог.
+     */
+    private fun launchVehicleApp() {
+        val prefs = Prefs.get(this)
+        val saved = prefs.vehicleAppPackage
+        if (saved != null && AppLauncher.isPackageInstalled(this, saved)) {
+            if (!AppLauncher.launchPackage(this, saved)) {
+                Toast.makeText(this, R.string.vehicle_app_missing, Toast.LENGTH_LONG).show()
+            }
+            return
+        }
+        if (saved != null && !AppLauncher.isPackageInstalled(this, saved)) {
+            prefs.vehicleAppPackage = null // приложение удалено — очищаем выбор честно
+            Toast.makeText(this, R.string.vehicle_removed, Toast.LENGTH_LONG).show()
+        }
+        showVehicleAppChooser()
+    }
+
+    /** Диалог выбора реально установленного диагностического приложения (долгое нажатие на плитку). */
+    private fun showVehicleAppChooser() {
+        val apps = AppLauncher.diagnosticApps(this)
+        if (apps.isEmpty()) {
+            Toast.makeText(this, R.string.vehicle_no_diag_apps, Toast.LENGTH_LONG).show()
+            return
+        }
+        AppPickerDialog.show(
+            context = this,
+            titleRes = R.string.vehicle_pick_app,
+            apps = apps,
+            onPick = { entry ->
+                Prefs.get(this).vehicleAppPackage = entry.packageName
+                if (!AppLauncher.launchPackage(this, entry.packageName)) {
+                    Toast.makeText(this, R.string.vehicle_app_missing, Toast.LENGTH_LONG).show()
+                }
+            },
+            onCancel = null,
+        )
+    }
+
+    /** Вторая страница: реальные рабочие плитки (Приложения, Телефон, Карты/Навигация-раздел ...). */
+    private fun pageTwoTiles(): List<TileSpec> = listOf(
+        TileSpec(R.drawable.ic_apps, R.string.tile_apps) {
+            openSection(AppsFragment::class.java, R.string.apps_title) },
+        TileSpec(R.drawable.ic_phone, R.string.tile_phone) {
+            openSection(PhoneFragment::class.java, R.string.tile_phone) },
+        TileSpec(R.drawable.ic_nav, R.string.tile_navigation) {
+            openSection(NavigationFragment::class.java, R.string.tile_navigation) },
+        TileSpec(R.drawable.ic_radio, R.string.tile_radio) {
+            openSection(RadioFragment::class.java, R.string.tile_radio) },
+        TileSpec(R.drawable.ic_media, R.string.tile_media) {
+            openSection(MediaFragment::class.java, R.string.tile_media) },
+        TileSpec(R.drawable.ic_settings, R.string.tile_settings) {
+            openSection(SettingsFragment::class.java, R.string.tile_settings) }
+    )
 
     private fun setupPager() {
         binding.pager.adapter = HomePageAdapter(listOf(pageOneTiles(), pageTwoTiles()))
@@ -252,7 +319,28 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
                 val tile = holder.view.findViewById<VWTile>(ids[i])
                 tile.setup(spec.icon, spec.label)
                 tile.onTileClick = spec.action
+                tile.onTileLongClick = spec.onLong
+                tile.setHighlighted(spec.highlight?.invoke() == true)
             }
+        }
+    }
+
+    /** Подсветка Bluetooth-плитки при изменении общего состояния PlayerSource (без рассинхрона UI). */
+    private val playerSourceListener = object : PlayerSource.Listener {
+        override fun onPlayerSourceChanged(kind: PlayerSource.Kind) {
+            if (!::binding.isInitialized) return
+            binding.pager.post { refreshTileHighlights() }
+        }
+    }
+
+    private fun refreshTileHighlights() {
+        val page1 = binding.pager.getChildAt(0) as? RecyclerView ?: return
+        val vh = page1.findViewHolderForAdapterPosition(0) as? HomePageAdapter.PageHolder ?: return
+        val specs = listOf(pageOneTiles()[2]) // Bluetooth — третья плитка первой страницы
+        val ids = intArrayOf(R.id.tileC)
+        specs.forEachIndexed { i, spec ->
+            val tile = vh.view.findViewById<VWTile>(ids[i])
+            tile.setHighlighted(spec.highlight?.invoke() == true)
         }
     }
 

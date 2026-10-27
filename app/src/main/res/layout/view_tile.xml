@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="28dp"
         android:textColor="@color/vw_text_primary"
         android:textSize="@dimen/tile_label"
         android:letterSpacing="0.03"

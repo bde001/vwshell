@@ -15,6 +15,7 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
@@ -22,6 +23,8 @@ import com.vwshell.auto.MainActivity
 import com.vwshell.auto.R
 import com.vwshell.auto.core.AppLauncher
 import com.vwshell.auto.core.MediaMonitor
+import com.vwshell.auto.core.Prefs
+import com.vwshell.auto.core.PlayerSource
 import com.vwshell.auto.core.ShellState
 import com.vwshell.auto.media.AudioItem
 import com.vwshell.auto.media.LocalAudioRepository
@@ -29,51 +32,62 @@ import com.vwshell.auto.media.LocalPlayerEngine
 import java.util.Locale
 
 /**
- * Медиацентр VW Shell — собственный экран в стиле Discover Pro, два реальных источника:
+ * Единый экран аудиоплеера VW Shell в стиле Discover Pro.
  *
- * 1) ЛОКАЛЬНЫЕ ФАЙЛЫ: медиатека через MediaStore (READ_MEDIA_AUDIO на Android 13),
- *    воспроизведение движком LocalPlayerEngine (MediaPlayer + аудиофокус + публикация
- *    MediaSession). Показываются только реально найденные треки и реальные метаданные.
+ * Компоновка: слева — текущий трек (обложка, название, исполнитель, транспорт, прогресс,
+ * громкость); справа — прокручиваемый плейлист с выделением текущего трека.
  *
- * 2) ВНЕШНИЕ ИСТОЧНИКИ (Bluetooth-телефон, USB-плеер): управление реальной активной
- *    медиасессией через MediaController. ВАЖНО: оболочка управляет воспроизведением НА
- *    ИСТОЧНИКЕ и отображает его метаданные; приём Bluetooth-A2DP-потока внутрь приложения
- *    требует системного A2DP Sink / OEM-поддержки и здесь НЕ эмулируется.
+ * ОДИН интерфейс для двух реальных источников; выбор источника хранится в общем состоянии
+ * PlayerSource (его же использует Bluetooth-плитка главного экрана — рассинхрон невозможен):
  *
- * Транспортные команды выполняются только если сессия объявила соответствующие ACTION_*.
+ * 1) LOCAL — медиатека MediaStore (READ_MEDIA_AUDIO на Android 13), движок LocalPlayerEngine;
+ * 2) EXTERNAL — управление реальной активной внешней медиасессией Android через MediaController
+ *    (BT-телефон, USB-плеер). Приём Bluetooth-A2DP-потока «внутрь» приложения НЕ поддерживается
+ *    и не эмулируется — оболочка только отображает метаданные и шлёт транспортные команды
+ *    реальному источнику, если он объявил соответствующие ACTION_*.
  */
-class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEngine.Listener {
+class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEngine.Listener,
+    PlayerSource.Listener {
 
     override val titleRes = R.string.media_title
 
-    private lateinit var localArt: ImageView
-    private lateinit var localTrack: TextView
-    private lateinit var localArtist: TextView
-    private lateinit var localSeek: SeekBar
-    private lateinit var localPos: TextView
-    private lateinit var localDur: TextView
-    private lateinit var btnLocalPlay: ImageButton
+    // Левая колонка «Сейчас играет» (общая для обоих источников)
+    private lateinit var npArt: ImageView
+    private lateinit var npTrack: TextView
+    private lateinit var npArtist: TextView
+    private lateinit var npSeek: SeekBar
+    private lateinit var npPos: TextView
+    private lateinit var npDur: TextView
+    private lateinit var btnPlay: ImageButton
+    private lateinit var btnPrev: View
+    private lateinit var btnNext: View
     private lateinit var volumeSeek: SeekBar
-    private lateinit var localStatus: TextView
+    private lateinit var playerStatus: TextView
+
+    // Панель источника
+    private lateinit var sourceIcon: ImageView
+    private lateinit var sourceLabel: TextView
+    private lateinit var btnSwitchSource: ImageButton
+
+    // Правая колонка: плейлист
+    private lateinit var trackList: RecyclerView
+    private lateinit var playlistEmpty: TextView
+
+    // Служебные кнопки (появляются только при реальной необходимости)
     private lateinit var grantAudioBtn: MaterialButton
     private lateinit var rescanBtn: MaterialButton
-
-    private lateinit var extSourceIcon: ImageView
-    private lateinit var extAlbumArt: ImageView
-    private lateinit var extTrack: TextView
-    private lateinit var extArtist: TextView
-    private lateinit var extStatus: TextView
-    private lateinit var btnExtPlay: ImageButton
-    private lateinit var btnExtPrev: View
-    private lateinit var btnExtNext: View
     private lateinit var grantAccessBtn: MaterialButton
 
     private var controller: MediaController? = null
     private var engine: LocalPlayerEngine? = null
     private var playlist: List<AudioItem> = emptyList()
     private var seeking = false
+    private var lastSnap: ShellState.MediaSnapshot? = null
+
     private val trackAdapter = SimpleRowAdapter(onClick = { item ->
         val idx = item.payload as? Int ?: return@SimpleRowAdapter
+        PlayerSource.setKind(PlayerSource.Kind.LOCAL)
+        Prefs.get(requireContext()).mediaSourceKind = PlayerSource.Kind.LOCAL.name
         engine?.setPlaylist(playlist, idx)
     })
 
@@ -82,46 +96,59 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        localArt = view.findViewById(R.id.localArt)
-        localTrack = view.findViewById(R.id.localTrack)
-        localArtist = view.findViewById(R.id.localArtist)
-        localSeek = view.findViewById(R.id.localSeek)
-        localPos = view.findViewById(R.id.localPos)
-        localDur = view.findViewById(R.id.localDur)
-        btnLocalPlay = view.findViewById(R.id.btnLocalPlay)
+        npArt = view.findViewById(R.id.npArt)
+        npTrack = view.findViewById(R.id.npTrack)
+        npArtist = view.findViewById(R.id.npArtist)
+        npSeek = view.findViewById(R.id.npSeek)
+        npPos = view.findViewById(R.id.npPos)
+        npDur = view.findViewById(R.id.npDur)
+        btnPlay = view.findViewById(R.id.btnPlay)
+        btnPrev = view.findViewById(R.id.btnPrev)
+        btnNext = view.findViewById(R.id.btnNext)
         volumeSeek = view.findViewById(R.id.volumeSeek)
-        localStatus = view.findViewById(R.id.localStatus)
+        playerStatus = view.findViewById(R.id.playerStatus)
+
+        sourceIcon = view.findViewById(R.id.sourceIcon)
+        sourceLabel = view.findViewById(R.id.sourceLabel)
+        btnSwitchSource = view.findViewById(R.id.btnSwitchSource)
+
+        trackList = view.findViewById(R.id.trackList)
+        playlistEmpty = view.findViewById(R.id.playlistEmpty)
         grantAudioBtn = view.findViewById(R.id.btnGrantAudio)
         rescanBtn = view.findViewById(R.id.btnRescan)
-
-        extSourceIcon = view.findViewById(R.id.extSourceIcon)
-        extAlbumArt = view.findViewById(R.id.extAlbumArt)
-        extTrack = view.findViewById(R.id.extTrack)
-        extArtist = view.findViewById(R.id.extArtist)
-        extStatus = view.findViewById(R.id.extStatus)
-        btnExtPlay = view.findViewById(R.id.btnExtPlay)
-        btnExtPrev = view.findViewById(R.id.btnExtPrev)
-        btnExtNext = view.findViewById(R.id.btnExtNext)
         grantAccessBtn = view.findViewById(R.id.btnGrantMediaAccess)
 
-        view.findViewById<RecyclerView>(R.id.localList).apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = trackAdapter
+        trackList.layoutManager = LinearLayoutManager(requireContext())
+        trackList.adapter = trackAdapter
+        listBound = true
+
+        btnPrev.setOnClickListener { onPrev() }
+        btnNext.setOnClickListener { onNext() }
+        btnPlay.setOnClickListener { onPlayPause() }
+
+        // Переключатель источника: то же общее состояние PlayerSource, что и у Bluetooth-плитки.
+        btnSwitchSource.setOnClickListener {
+            if (!PlayerSource.toggle(requireContext())) {
+                Toast.makeText(requireContext(), R.string.media_no_external_session,
+                    Toast.LENGTH_LONG).show()
+            }
         }
-        trackAdapterLoaded = true
 
-        view.findViewById<View>(R.id.btnLocalPrev).setOnClickListener { engine?.previous() }
-        view.findViewById<View>(R.id.btnLocalNext).setOnClickListener { engine?.next() }
-        btnLocalPlay.setOnClickListener { engine?.togglePlayPause() }
-        grantAudioBtn.setOnClickListener { (activity as? MainActivity)?.requestAudioPermission() }
-        rescanBtn.setOnClickListener { loadLibrary() }
-
-        localSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        npSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, p: Int, fromUser: Boolean) {}
             override fun onStartTrackingTouch(sb: SeekBar?) { seeking = true }
             override fun onStopTrackingTouch(sb: SeekBar?) {
                 seeking = false
-                sb?.let { engine?.seekTo(it.progress.toLong()) }
+                val pos = sb?.progress?.toLong()?.times(1000) ?: return
+                val ext = PlayerSource.externalController(lastSnap)
+                if (ext != null) {
+                    val allowed = try { ext.playbackState?.actions ?: 0L }
+                    catch (_: IllegalStateException) { 0L }
+                    if (allowed and PlaybackState.ACTION_SEEK_TO == 0L) return toastUnsupported()
+                    try { ext.transportControls.seekTo(pos) } catch (_: Exception) { toastNoSession() }
+                } else {
+                    engine?.seekTo(pos)
+                }
             }
         })
 
@@ -137,9 +164,8 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
-        btnExtPrev.setOnClickListener { extTransport(PlaybackState.ACTION_SKIP_TO_PREVIOUS) }
-        btnExtNext.setOnClickListener { extTransport(PlaybackState.ACTION_SKIP_TO_NEXT) }
-        btnExtPlay.setOnClickListener { extToggle() }
+        grantAudioBtn.setOnClickListener { (activity as? MainActivity)?.requestAudioPermission() }
+        rescanBtn.setOnClickListener { loadLibrary() }
         grantAccessBtn.setOnClickListener { openNotificationListenerSettings() }
     }
 
@@ -147,11 +173,15 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         super.onResume()
         engine = LocalPlayerEngine.get(requireContext()).also { it.addListener(this) }
         ShellState.addListener(this, this)
+        PlayerSource.addListener(this)
+        PlayerSource.restoreFromPrefs(requireContext())
         ShellState.refresh()
         loadLibrary()
+        render()
     }
 
     override fun onPause() {
+        PlayerSource.removeListener(this)
         ShellState.removeListener(this)
         engine?.removeListener(this)
         super.onPause()
@@ -159,9 +189,110 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
 
     override fun onDestroyView() {
         // Адаптер привязан к уничтожаемой RecyclerView — отвязываем до пересоздания View.
-        trackAdapterLoaded = false
-        view?.findViewById<RecyclerView>(R.id.localList)?.adapter = null
+        listBound = false
+        trackList.adapter = null
         super.onDestroyView()
+    }
+
+    // ==================== Рендер единого экрана по общему состоянию ====================
+
+    /** Полная перерисовка «Сейчас играет» в зависимости от выбранного PlayerSource источника. */
+    private fun render() {
+        if (!listBound || !::npTrack.isInitialized) return
+        when (PlayerSource.kind) {
+            PlayerSource.Kind.LOCAL -> renderLocal()
+            PlayerSource.Kind.EXTERNAL -> renderExternal()
+        }
+        updateSourceBar()
+        updatePlaylistPanel()
+    }
+
+    private fun updateSourceBar() {
+        val external = PlayerSource.kind == PlayerSource.Kind.EXTERNAL
+        sourceLabel.setText(if (external) R.string.tile_bluetooth_source else R.string.media_local_title)
+        sourceIcon.setImageResource(if (external) R.drawable.ic_bluetooth else R.drawable.ic_media)
+        val tint = if (external) R.color.vw_accent else R.color.vw_text_secondary
+        sourceIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), tint)
+        // Красная подсветка кнопки переключения при активном внешнем источнике.
+        btnSwitchSource.imageTintList = ContextCompat.getColorStateList(
+            requireContext(), if (external) R.color.vw_accent else R.color.vw_icon_tint)
+    }
+
+    private fun renderLocal() {
+        npSeek.isEnabled = engine?.hasPlaylist == true
+        npSeek.max = 0
+        updatePlaylistHighlightOnly()
+    }
+
+    private fun renderExternal() {
+        applyExternalSnapshot(lastSnap)
+    }
+
+    /** Плейлист относится к локальной медиатеке: при внешнем источнике — честное сообщение. */
+    private fun updatePlaylistPanel() {
+        if (PlayerSource.kind == PlayerSource.Kind.EXTERNAL) {
+            playlistEmpty.visibility = View.VISIBLE
+            playlistEmpty.setText(R.string.media_playlist_external_hint)
+            return
+        }
+        if (!isLocalGranted()) {
+            playlistEmpty.visibility = View.VISIBLE
+            playlistEmpty.setText(R.string.media_no_permission_audio)
+            return
+        }
+        playlistEmpty.visibility = if (playlist.isEmpty()) View.VISIBLE else View.GONE
+        if (playlist.isEmpty()) playlistEmpty.setText(R.string.media_local_empty)
+    }
+
+    private fun isLocalGranted(): Boolean = (activity as? MainActivity)?.hasAudioPermission() == true
+
+    // ==================== Транспорт: маршрутизация по выбранному источнику ====================
+
+    private fun onPlayPause() {
+        val snap = lastSnap
+        if (PlayerSource.allowsExternal(snap)) {
+            val c = snap!!.controller!!
+            val ps = try { c.playbackState } catch (_: IllegalStateException) { null }
+            when (MediaSessionLogic.playOrPause(ps)) {
+                true -> c.transportControls.play()
+                false -> c.transportControls.pause()
+                null -> toastUnsupported()
+            }
+            return
+        }
+        if (PlayerSource.kind == PlayerSource.Kind.EXTERNAL) {
+            // Источник выбран, но сессия пропала (источник отключился) — понятное сообщение.
+            toastNoSession(); return
+        }
+        val e = engine
+        if (e == null || !e.hasPlaylist) { toastNoLocalPlaylist(); return }
+        e.togglePlayPause()
+    }
+
+    private fun onNext() {
+        val snap = lastSnap
+        if (PlayerSource.allowsExternal(snap)) {
+            if (!PlayerSource.externalCanSkipNext(snap)) return toastUnsupported()
+            snap!!.controller!!.transportControls.skipToNext()
+            return
+        }
+        if (PlayerSource.kind == PlayerSource.Kind.EXTERNAL) { toastNoSession(); return }
+        val e = engine ?: return
+        if (!e.hasPlaylist) { toastNoLocalPlaylist(); return }
+        e.next()
+    }
+
+    private fun onPrev() {
+        val snap = lastSnap
+        if (PlayerSource.allowsExternal(snap)) {
+            if (!PlayerSource.externalCanSkipPrev(snap)) return toastUnsupported()
+            snap!!.controller!!.transportControls.skipToPrevious()
+            return
+        }
+        if (PlayerSource.kind == PlayerSource.Kind.EXTERNAL) { toastNoSession(); return }
+        val e = engine ?: return
+        if (!e.hasPlaylist) { toastNoLocalPlaylist(); return }
+        e.previous()
     }
 
     // ==================== Локальная медиатека ====================
@@ -173,166 +304,200 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         if (!act.hasAudioPermission()) {
             grantAudioBtn.visibility = View.VISIBLE
             rescanBtn.visibility = View.GONE
-            localStatus.setText(R.string.media_no_permission_audio)
             playlist = emptyList()
-            updateTrackButtons()
+            trackAdapter.submit(emptyList())
             return
         }
         grantAudioBtn.visibility = View.GONE
         rescanBtn.visibility = View.VISIBLE
         playlist = LocalAudioRepository.load(requireContext())
-        if (playlist.isEmpty()) localStatus.setText(R.string.media_local_empty)
-        updateTrackButtons()
-    }
-
-    private var trackAdapterLoaded = false
-
-    /** Список — только реально найденные MediaStore композиции; кнопки активны при реальном плейлисте. */
-    private fun updateTrackButtons() {
-        if (!trackAdapterLoaded) return
         trackAdapter.submit(playlist.mapIndexed { i, it ->
             RowItem(it.displayTitle, "${it.displayArtist} · ${formatTime(it.durationMs)}", payload = i)
         })
-        val prev = view?.findViewById<View>(R.id.btnLocalPrev)
-        val next = view?.findViewById<View>(R.id.btnLocalNext)
-        val hasEngine = engine?.hasPlaylist == true
-        prev?.alpha = if (hasEngine) 1f else 0.35f
-        next?.alpha = if (hasEngine) 1f else 0.35f
-        btnLocalPlay.alpha = if (hasEngine) 1f else 0.35f
+        updatePlaylistHighlightOnly()
+    }
+
+    private var listBound = false
+
+    /** Выделение текущего трека жирным белым + маркер; остальные — нейтральные. */
+    private fun updatePlaylistHighlightOnly() {
+        if (!listBound) return
+        val curIdx = engine?.currentItem?.let { ci -> playlist.indexOfFirst { it.id == ci.id } } ?: -1
+        trackAdapter.submit(playlist.mapIndexed { i, it ->
+            RowItem(
+                it.displayTitle,
+                "${it.displayArtist} · ${formatTime(it.durationMs)}",
+                checked = PlayerSource.kind == PlayerSource.Kind.LOCAL && i == curIdx,
+                payload = i
+            )
+        })
     }
 
     fun onAudioPermissionResult(granted: Boolean) {
         if (!isAdded) return
         if (granted) loadLibrary()
         else Toast.makeText(requireContext(), R.string.media_no_permission_audio, Toast.LENGTH_LONG).show()
+        render()
     }
 
-    // ---- LocalPlayerEngine.Listener: реальные события движка ----
+    // ---- LocalPlayerEngine.Listener: реальные события движка (только когда источник LOCAL) ----
 
     override fun onPlayerEvent(state: Int, item: AudioItem?, positionMs: Long, durationMs: Long) {
-        if (!isAdded || !::localTrack.isInitialized) return
-        if (item == null) {
-            localTrack.text = ""
-            localArtist.text = ""
-            localSeek.isEnabled = false
-            localSeek.max = 0
-            localSeek.progress = 0
-            localPos.text = "0:00"; localDur.text = "0:00"
-            btnLocalPlay.setImageResource(R.drawable.ic_play)
-            updateTrackButtons()
-            if (state == PlaybackState.STATE_ERROR) localStatus.setText(R.string.media_load_failed)
-            else if (playlist.isEmpty()) localStatus.setText(R.string.media_local_empty)
-            else localStatus.setText(R.string.media_local_stopped)
-            return
-        }
-        localTrack.text = item.displayTitle
-        localArtist.text = item.displayArtist
-        localSeek.isEnabled = state != PlaybackState.STATE_ERROR
-        if (!seeking) {
-            localSeek.max = (durationMs / 1000).toInt().coerceAtLeast(1)
-            localSeek.progress = (positionMs / 1000).toInt().coerceIn(0, localSeek.max)
-        }
-        localPos.text = formatTime(positionMs)
-        localDur.text = formatTime(durationMs)
-        when (state) {
-            PlaybackState.STATE_PLAYING -> {
-                btnLocalPlay.setImageResource(R.drawable.ic_pause)
-                localStatus.setText(R.string.media_playing_local)
+        if (!isAdded || !::npTrack.isInitialized) return
+        if (PlayerSource.kind == PlayerSource.Kind.LOCAL) {
+            if (item == null) {
+                npTrack.text = ""
+                npArtist.text = ""
+                npSeek.isEnabled = false
+                npSeek.max = 0
+                npSeek.progress = 0
+                npPos.text = "0:00"; npDur.text = "0:00"
+                btnPlay.setImageResource(R.drawable.ic_play)
+                setTransportAlpha(localActive = false)
+                if (state == PlaybackState.STATE_ERROR) playerStatus.setText(R.string.media_load_failed)
+                else if (playlist.isEmpty()) playerStatus.setText(R.string.media_local_empty)
+                else playerStatus.setText(R.string.media_local_stopped)
+            } else {
+                npTrack.text = item.displayTitle
+                npArtist.text = item.displayArtist
+                npSeek.isEnabled = state != PlaybackState.STATE_ERROR
+                if (!seeking) {
+                    npSeek.max = (durationMs / 1000).toInt().coerceAtLeast(1)
+                    npSeek.progress = (positionMs / 1000).toInt().coerceIn(0, npSeek.max)
+                }
+                npPos.text = formatTime(positionMs)
+                npDur.text = formatTime(durationMs)
+                when (state) {
+                    PlaybackState.STATE_PLAYING -> {
+                        btnPlay.setImageResource(R.drawable.ic_pause)
+                        playerStatus.setText(R.string.media_playing_local)
+                    }
+                    PlaybackState.STATE_PAUSED -> {
+                        btnPlay.setImageResource(R.drawable.ic_play)
+                        playerStatus.setText(R.string.media_local_paused)
+                    }
+                    PlaybackState.STATE_BUFFERING -> btnPlay.setImageResource(R.drawable.ic_play)
+                    PlaybackState.STATE_ERROR -> playerStatus.setText(R.string.media_load_failed)
+                    else -> {}
+                }
+                setTransportAlpha(localActive = true)
             }
-            PlaybackState.STATE_PAUSED -> {
-                btnLocalPlay.setImageResource(R.drawable.ic_play)
-                localStatus.setText(R.string.media_local_paused)
-            }
-            PlaybackState.STATE_BUFFERING -> btnLocalPlay.setImageResource(R.drawable.ic_play)
-            PlaybackState.STATE_ERROR -> localStatus.setText(R.string.media_load_failed)
-            else -> {}
+            updatePlaylistHighlightOnly()
         }
-        updateTrackButtons()
+        if (PlayerSource.kind == PlayerSource.Kind.LOCAL && item != null && item !== engine?.currentItem) {
+            // событие не о текущем треке — ничего не делаем (защита от гонок движка)
+        }
     }
 
     override fun onArtworkReady(item: AudioItem?, bitmap: Bitmap?) {
-        if (!isAdded || !::localArt.isInitialized) return
+        if (!isAdded || !::npArt.isInitialized) return
+        if (PlayerSource.kind != PlayerSource.Kind.LOCAL) return
         if (bitmap != null) {
-            localArt.scaleType = ImageView.ScaleType.FIT_CENTER
-            localArt.imageTintList = null
-            localArt.setImageBitmap(bitmap)
+            npArt.scaleType = ImageView.ScaleType.FIT_CENTER
+            npArt.imageTintList = null
+            npArt.setImageBitmap(bitmap)
         } else {
             // Реальной обложки у файла нет — нейтральная векторная заглушка, без фальшивых картинок.
-            localArt.setImageResource(R.drawable.ic_album)
+            npArt.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            npArt.setImageResource(R.drawable.ic_album)
         }
+    }
+
+    private fun setTransportAlpha(localActive: Boolean) {
+        val a = if (localActive) 1f else 0.35f
+        btnPlay.alpha = a; btnPrev.alpha = a; btnNext.alpha = a
     }
 
     // ==================== Внешняя медиасессия (ShellState) ====================
 
     override fun onMediaStateChanged(snap: ShellState.MediaSnapshot?) {
-        if (!isAdded || !::extTrack.isInitialized) return
-        val c = snap?.controller
-        controller = c
+        if (!isAdded || !::npTrack.isInitialized) return
+        lastSnap = snap
+        controller = snap?.controller
         val hasAccess = MediaMonitor.isNotificationServiceEnabled(requireContext())
-        if (c == null) {
-            extSourceIcon.visibility = View.GONE
-            extAlbumArt.visibility = View.GONE
-            extTrack.text = ""
-            extArtist.text = ""
-            btnExtPlay.setImageResource(R.drawable.ic_play)
-            btnExtPlay.alpha = 0.35f
-            btnExtPrev.alpha = 0.35f
-            btnExtNext.alpha = 0.35f
-            grantAccessBtn.visibility = if (hasAccess) View.GONE else View.VISIBLE
-            extStatus.setText(if (hasAccess) R.string.media_no_session else R.string.media_need_access)
+        grantAccessBtn.visibility =
+            if (snap?.controller != null || hasAccess) View.GONE else View.VISIBLE
+
+        // Если внешний источник выбран, а сессия пропала (источник отключился) —
+        // честно возвращаем UI в состояние «нет источника», не молча переключая выбор.
+        if (PlayerSource.kind == PlayerSource.Kind.EXTERNAL) {
+            applyExternalSnapshot(snap)
+            updateSourceBar()
+            updatePlaylistPanel()
             return
         }
-        grantAccessBtn.visibility = View.GONE
+        // Локальный источник: обновляем только панель источника/плейлиста, «Сейчас играет» — у движка.
+        updateSourceBar()
+        updatePlaylistPanel()
+    }
+
+    private fun applyExternalSnapshot(snap: ShellState.MediaSnapshot?) {
+        val c = snap?.controller
+        if (c == null) {
+            npTrack.text = ""
+            npArtist.text = ""
+            npSeek.isEnabled = false
+            npSeek.max = 0
+            npPos.text = "0:00"; npDur.text = "0:00"
+            npArt.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            npArt.setImageResource(R.drawable.ic_album)
+            btnPlay.setImageResource(R.drawable.ic_play)
+            btnPlay.alpha = 0.35f; btnPrev.alpha = 0.35f; btnNext.alpha = 0.35f
+            playerStatus.setText(R.string.media_no_session)
+            return
+        }
         val pkgLabel = AppLauncher.appLabel(requireContext(), snap.sourcePackage) ?: snap.sourcePackage ?: ""
-        extStatus.text = getString(R.string.media_source_of, pkgLabel)
-        extSourceIcon.visibility = View.VISIBLE
-        extSourceIcon.setImageResource(
-            if (snap.sourcePackage?.contains("bluetooth", true) == true) R.drawable.ic_bluetooth
-            else R.drawable.ic_usb)
-        extTrack.text = snap.title ?: getString(R.string.media_track_unknown)
-        extArtist.text = snap.artist ?: ""
-        // Обложка: только реально переданная сессией битмап.
-        extAlbumArt.visibility = View.VISIBLE
+        npTrack.text = snap.title ?: getString(R.string.media_track_unknown)
+        npArtist.text = snap.artist ?: pkgLabel
+        npArt.scaleType = ImageView.ScaleType.CENTER_INSIDE
         val bmp = snap.artwork
         if (bmp != null) {
-            extAlbumArt.imageTintList = null
-            extAlbumArt.scaleType = ImageView.ScaleType.FIT_CENTER
-            extAlbumArt.setImageBitmap(bmp)
+            npArt.imageTintList = null
+            npArt.scaleType = ImageView.ScaleType.FIT_CENTER
+            npArt.setImageBitmap(bmp)
         } else {
-            extAlbumArt.scaleType = ImageView.ScaleType.CENTER_INSIDE
-            extAlbumArt.setImageResource(R.drawable.ic_album)
-            extAlbumArt.imageTintList = android.content.res.ColorStateList.valueOf(
-                resources.getColor(R.color.vw_text_disabled, null))
+            npArt.setImageResource(R.drawable.ic_album)
         }
-        btnExtPlay.setImageResource(if (snap.playing) R.drawable.ic_pause else R.drawable.ic_play)
-        // Кнопки активны только при реально объявленных действиях источника.
-        btnExtPlay.alpha = if (snap.canPlay() || snap.canPause()) 1f else 0.35f
-        btnExtPrev.alpha = if (snap.canSkipPrev()) 1f else 0.35f
-        btnExtNext.alpha = if (snap.canSkipNext()) 1f else 0.35f
+        if (!seeking) {
+            npSeek.isEnabled = snap.canSeek() && snap.durationMs > 0
+            npSeek.max = (snap.durationMs / 1000).toInt().coerceAtLeast(1)
+            npSeek.progress = (snap.positionMs / 1000).toInt().coerceIn(0, npSeek.max)
+        }
+        npPos.text = formatTime(if (snap.positionMs > 0) snap.positionMs else 0)
+        npDur.text = formatTime(if (snap.durationMs > 0) snap.durationMs else 0)
+        btnPlay.setImageResource(if (snap.playing) R.drawable.ic_pause else R.drawable.ic_play)
+        // Кнопки активны только при реально объявленных источником действиях.
+        btnPlay.alpha = if (snap.canPlay() || snap.canPause()) 1f else 0.35f
+        btnPrev.alpha = if (snap.canSkipPrev()) 1f else 0.35f
+        btnNext.alpha = if (snap.canSkipNext()) 1f else 0.35f
+        playerStatus.text = getString(R.string.media_source_of, pkgLabel) + " · " +
+            getString(if (snap.playing) R.string.media_state_playing_ext
+                      else R.string.media_state_paused_ext)
     }
 
-    private fun extTransport(action: Long) {
-        val c = controller ?: return toastNoSession()
-        val allowed = try { c.playbackState?.actions ?: 0L } catch (_: IllegalStateException) { 0L }
-        if (allowed and action == 0L) return toastUnsupported()
-        when (action) {
-            PlaybackState.ACTION_SKIP_TO_PREVIOUS -> c.transportControls.skipToPrevious()
-            PlaybackState.ACTION_SKIP_TO_NEXT -> c.transportControls.skipToNext()
-        }
-    }
+    // ---- PlayerSource.Listener: общий источник изменился (плитка BT или кнопка экрана) ----
 
-    private fun extToggle() {
-        val c = controller ?: return toastNoSession()
-        val ps = try { c.playbackState } catch (_: IllegalStateException) { null }
-        when (MediaSessionLogic.playOrPause(ps)) {
-            true -> c.transportControls.play()
-            false -> c.transportControls.pause()
-            null -> toastUnsupported()
+    override fun onPlayerSourceChanged(kind: PlayerSource.Kind) {
+        if (!isAdded || !::npTrack.isInitialized) return
+        if (kind == PlayerSource.Kind.LOCAL) {
+            // При возврате к локальному — показываем актуальное состояние движка сразу.
+            engine?.let { e ->
+                if (e.hasPlaylist) {
+                    val item = e.currentItem
+                    npTrack.text = item?.displayTitle ?: ""
+                    npArtist.text = item?.displayArtist ?: ""
+                    btnPlay.setImageResource(if (e.isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
+                }
+            }
         }
+        render()
     }
 
     private fun toastNoSession() =
         Toast.makeText(requireContext(), R.string.media_no_session, Toast.LENGTH_SHORT).show()
+
+    private fun toastNoLocalPlaylist() =
+        Toast.makeText(requireContext(), R.string.media_local_empty, Toast.LENGTH_SHORT).show()
 
     private fun toastUnsupported() =
         Toast.makeText(requireContext(), R.string.media_action_unsupported, Toast.LENGTH_SHORT).show()

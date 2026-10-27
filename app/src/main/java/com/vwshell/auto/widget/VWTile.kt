@@ -22,6 +22,8 @@ class VWTile @JvmOverloads constructor(
     private val underlineView: android.view.View
 
     var onTileClick: (() -> Unit)? = null
+    /** Долгое нажатие (например, смена выбранного диагностического приложения). */
+    var onTileLongClick: (() -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_tile, this, true)
@@ -36,6 +38,10 @@ class VWTile @JvmOverloads constructor(
             animateUnderline()
             postDelayed({ onTileClick?.invoke() }, 90) // короткая пауза для тактильной обратной связи, без блокировки UI-потока
         }
+        super.setOnLongClickListener {
+            onTileLongClick?.invoke()
+            onTileLongClick != null
+        }
 
         val a = context.obtainStyledAttributes(attrs, R.styleable.VWTile)
         val iconRes = a.getResourceId(R.styleable.VWTile_tileIcon, 0)
@@ -48,6 +54,17 @@ class VWTile @JvmOverloads constructor(
     fun setup(iconRes: Int, labelRes: Int) {
         iconView.setImageResource(iconRes)
         labelView.setText(labelRes)
+    }
+
+    /**
+     * Активная подсветка плитки (красный акцент Volkswagen #E3182D) — например,
+     * когда Bluetooth-плитка отражает выбранный внешний источник плеера.
+     */
+    fun setHighlighted(active: Boolean) {
+        val color = if (active) context.resources.getColor(R.color.vw_accent, null)
+            else context.resources.getColor(R.color.vw_icon_tint, null)
+        iconView.imageTintList = android.content.res.ColorStateList.valueOf(color)
+        labelView.setTextColor(color)
     }
 
     /** Красное подчёркивание «вспыхивает» при нажатии — короткий OEM-анимационный отклик. */

@@ -6,6 +6,7 @@
     <string name="tile_radio">Радио</string>
     <string name="tile_media">Медиа</string>
     <string name="tile_phone">Телефон</string>
+    <string name="tile_bluetooth_source">Bluetooth</string>
     <string name="tile_navigation">Навигация</string>
     <string name="tile_vehicle">Автомобиль</string>
     <string name="tile_settings">Настройки</string>
@@ -203,6 +204,15 @@
     <string name="home_settings_missing">Системный экран выбора домашнего приложения отсутствует на этой прошивке.</string>
     <string name="media_no_permission_audio">Нет доступа к аудиофайлам. Нажмите «Доступ к аудио» и подтвердите разрешение — без него медиатека не читается.</string>
     <string name="media_playing_local">Воспроизведение: локальные файлы (собственный плеер VW Shell)</string>
+    <string name="media_switch_source">Источник</string>
+    <string name="media_playlist">Плейлист</string>
+    <string name="media_state_playing_ext">Внешний источник: играет</string>
+    <string name="media_state_paused_ext">Внешний источник: пауза</string>
+    <string name="media_no_external_session">Внешняя медиасессия недоступна: подключите источник или запустите медиаприложение</string>
+    <string name="media_playlist_external_hint">Плейлист доступен при локальном источнике. Для внешней сессии управление — кнопками слева.</string>
+    <string name="vehicle_pick_app">Выберите диагностическое приложение</string>
+    <string name="vehicle_no_diag_apps">Диагностические приложения не найдены</string>
+    <string name="vehicle_removed">Ранее выбранное приложение удалено. Выберите другое.</string>
     <string name="media_local_paused">Пауза (локальный плеер)</string>
     <string name="media_local_stopped">Локальный плеер остановлен</string>
     <string name="media_load_failed">Не удалось прочитать медиатеку на этом устройстве.</string>

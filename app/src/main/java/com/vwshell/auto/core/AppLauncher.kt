@@ -206,9 +206,38 @@ object AppLauncher {
         return launchPackage(context, CAR_SCANNER_PRO)
     }
 
-    private const val GOOGLE_MAPS_PKG = "com.google.android.apps.maps"
-    private const val CAR_SCANNER_FREE = "com.mgmadv.carscanner.elm.free"
-    private const val CAR_SCANNER_PRO = "com.mgmadv.carscanner.elm.pro"
+    /** Google Maps установлен и запускается? (проверка реального лаунчер-интента, не догадка) */
+    fun isMapsAvailable(context: Context): Boolean =
+        context.packageManager.getLaunchIntentForPackage(GOOGLE_MAPS_PKG) != null
+
+    const val GOOGLE_MAPS_PKG = "com.google.android.apps.maps"
+    const val CAR_SCANNER_FREE = "com.mgmadv.carscanner.elm.free"
+    const val CAR_SCANNER_PRO = "com.mgmadv.carscanner.elm.pro"
+
+    /**
+     * Реально установленные совместимые диагностические (OBD2) приложения — только те,
+     * что имеют лаунчер-активность на этом устройстве (Android 11+: видимость обеспечивается
+     * элементом <queries> MAIN/LAUNCHER в манифесте, избыточных разрешений нет).
+     */
+    fun diagnosticApps(context: Context): List<AppEntry> {
+        val launchable = installedLaunchableApps(context)
+        return launchable.filter { e ->
+            val p = e.packageName.lowercase()
+            val l = e.label.lowercase()
+            p in OBD_KNOWN_PACKAGES || p.contains("obd") || p.contains("carscanner") ||
+                p.contains("car_scanner") || l.contains("obd") ||
+                l.contains("car scanner") || l.contains("диагност")
+        }
+    }
+
+    private val OBD_KNOWN_PACKAGES = setOf(
+        "com.mgmadv.carscanner.elm.free",   // Car Scanner ELM OBD2 (free)
+        "com.mgmadv.carscanner.elm.pro",    // Car Scanner ELM OBD2 (pro)
+        "com.fordtechservice.dealerconnection.8590D3DA65DCB", // FORScan
+        "org.puretel.obdautotester",
+        "com.obdautodo.starter",
+        "com.pluxiosoft.carly"
+    )
 
     /**
      * Состояние Bluetooth: null — адаптера нет / нет доступа (BLUETOOTH_CONNECT не выдано);

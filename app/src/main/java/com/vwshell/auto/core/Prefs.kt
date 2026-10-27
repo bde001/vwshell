@@ -52,6 +52,11 @@ class Prefs private constructor(context: Context) {
     fun lastFreqTenths(): Int? = sp.getInt(KEY_LAST_FREQ, -1).let { if (it < 0) null else it }
     fun setLastFreq(freqTenths: Int) = sp.edit().putInt(KEY_LAST_FREQ, freqTenths).apply()
 
+    /** Выбранный источник плеера: LOCAL / EXTERNAL (общее состояние PlayerSource). */
+    var mediaSourceKind: String
+        get() = sp.getString(KEY_MEDIA_SOURCE, "LOCAL") ?: "LOCAL"
+        set(v) = sp.edit().putString(KEY_MEDIA_SOURCE, v).apply()
+
     /** Последний реально наблюдавшийся источник медиа (для честного восстановления UI после пробуждения). */
     var lastMediaPackage: String?
         get() = sp.getString(KEY_LAST_MEDIA_PKG, null)
@@ -93,6 +98,7 @@ class Prefs private constructor(context: Context) {
     }
 
     companion object {
+        private const val KEY_MEDIA_SOURCE = "media_source_kind"
         private const val KEY_LAST_MEDIA_PKG = "last_media_pkg"
         private const val KEY_LAST_MEDIA_LABEL = "last_media_label"
         private const val KEY_FAV_APPS = "fav_apps"

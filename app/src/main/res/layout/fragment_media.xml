@@ -1,128 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Единый экран плеера: слева — текущий трек и управление, справа — прокручиваемый список. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical" android:background="@color/vw_background">
     <include layout="@layout/layout_section_header"/>
     <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
 
+    <!-- Индикатор выбранного источника (локальный / внешняя медиасессия) + переключатель -->
+    <LinearLayout android:id="@+id/sourceBar"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingStart="@dimen/screen_padding" android:paddingEnd="@dimen/screen_padding"
+        android:paddingTop="6dp" android:paddingBottom="6dp">
+
+        <ImageView android:id="@+id/sourceIcon" android:layout_width="@dimen/icon_sm"
+            android:layout_height="@dimen/icon_sm" android:src="@drawable/ic_media"
+            android:contentDescription="@string/media_source" android:tint="@color/vw_text_secondary"/>
+
+        <TextView android:id="@+id/sourceLabel" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:layout_marginStart="10dp"
+            android:singleLine="true" android:ellipsize="end"
+            android:textColor="@color/vw_text_primary" android:textSize="@dimen/body_text"
+            android:text="@string/media_local_title"/>
+
+        <ImageButton android:id="@+id/btnSwitchSource" style="@style/VW.ControlButton.small"
+            android:src="@drawable/ic_bluetooth" android:contentDescription="@string/media_switch_source"/>
+    </LinearLayout>
+
     <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
         android:orientation="horizontal" android:baselineAligned="false">
 
-        <!-- Левая колонка: собственный плеер локальных файлов -->
-        <LinearLayout android:id="@+id/localPanel"
+        <!-- Левая колонка: обложка, название, исполнитель, основные элементы управления -->
+        <ScrollView android:id="@+id/nowPlayingPanel"
             android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="5"
-            android:orientation="vertical" android:gravity="center" android:padding="@dimen/screen_padding">
-
-            <ImageView android:id="@+id/localArt"
-                android:layout_width="170dp" android:layout_height="170dp"
-                android:scaleType="centerInside"
-                android:background="@drawable/bg_tile"
-                android:src="@drawable/ic_album"
-                android:contentDescription="@string/media_local_title"/>
-
-            <TextView android:id="@+id/localTrack" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" android:gravity="center" android:singleLine="true" android:ellipsize="end"
-                android:textColor="@color/vw_text_primary" android:textSize="24sp"/>
-            <TextView android:id="@+id/localArtist" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:gravity="center" android:singleLine="true" android:ellipsize="end"
-                android:textColor="@color/vw_text_secondary" android:textSize="@dimen/title_text"/>
-
-            <!-- Реальный прогресс воспроизведения -->
-            <SeekBar android:id="@+id/localSeek" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="14dp" android:progressTint="@color/vw_accent"
-                android:thumbTint="@color/vw_accent" android:enabled="false"/>
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <TextView android:id="@+id/localPos" android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:textColor="@color/vw_text_disabled" android:textSize="@dimen/small_text" android:text="0:00"/>
-                <TextView android:id="@+id/localDur" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:textColor="@color/vw_text_disabled" android:textSize="@dimen/small_text" android:text="0:00"/>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:layout_marginTop="10dp">
-                <ImageButton android:id="@+id/btnLocalPrev" style="@style/VW.ControlButton"
-                    android:src="@drawable/ic_prev" android:contentDescription="@string/media_prev" android:alpha="0.35"/>
-                <ImageButton android:id="@+id/btnLocalPlay" style="@style/VW.ControlButton.play"
-                    android:src="@drawable/ic_play" android:contentDescription="@string/media_play" android:alpha="0.35"/>
-                <ImageButton android:id="@+id/btnLocalNext" style="@style/VW.ControlButton"
-                    android:src="@drawable/ic_next" android:contentDescription="@string/media_next" android:alpha="0.35"/>
-            </LinearLayout>
-
-            <!-- Системная громкость (AudioManager — поддерживаемый механизм) -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="12dp">
-                <ImageView android:layout_width="@dimen/icon_sm" android:layout_height="@dimen/icon_sm"
-                    android:src="@drawable/ic_volume" android:contentDescription="@string/media_volume"
-                    android:tint="@color/vw_text_secondary"/>
-                <SeekBar android:id="@+id/volumeSeek" android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:layout_marginStart="10dp" android:progressTint="@color/vw_accent"
-                    android:thumbTint="@color/vw_accent"/>
-            </LinearLayout>
-
-            <!-- Прокручиваемый список РЕАЛЬНО найденных композиций MediaStore -->
-            <androidx.recyclerview.widget.RecyclerView android:id="@+id/localList"
-                android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
-                android:minHeight="60dp" android:layout_marginTop="8dp" android:fadeScrollbars="false"/>
-
-            <TextView android:id="@+id/localStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="10dp" android:gravity="center" android:textColor="@color/vw_text_secondary"
-                android:textSize="@dimen/small_text" android:text="@string/media_local_empty"/>
-
-            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:orientation="horizontal" android:layout_marginTop="10dp">
-                <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantAudio" style="@style/VW.Button.Accent"
-                    android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
-                    android:text="@string/media_grant_audio" android:visibility="gone"/>
-                <com.google.android.material.button.MaterialButton android:id="@+id/btnRescan" style="@style/VW.Button"
-                    android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
-                    android:layout_marginStart="10dp" android:text="@string/media_rescan" android:visibility="gone"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/vw_divider"/>
-
-        <!-- Правая колонка: внешние источники (BT-телефон, USB-плеер) через медиасессию -->
-        <ScrollView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="4"
             android:fillViewport="true">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:gravity="center" android:padding="@dimen/screen_padding">
 
-                <TextView style="@style/VW.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="@string/media_external_title"/>
+                <ImageView android:id="@+id/npArt"
+                    android:layout_width="170dp" android:layout_height="170dp"
+                    android:scaleType="centerInside"
+                    android:background="@drawable/bg_tile"
+                    android:src="@drawable/ic_album"
+                    android:contentDescription="@string/media_local_title"/>
 
-                <ImageView android:id="@+id/extSourceIcon" android:layout_width="40dp" android:layout_height="40dp"
-                    android:layout_marginTop="14dp" android:src="@drawable/ic_bluetooth"
-                    android:contentDescription="@string/media_external_title" android:visibility="gone"
-                    android:tint="@color/vw_text_secondary"/>
-                <ImageView android:id="@+id/extAlbumArt" android:layout_width="120dp" android:layout_height="120dp"
-                    android:layout_marginTop="10dp" android:scaleType="centerInside" android:visibility="gone"
-                    android:contentDescription="@string/media_external_title"/>
-                <TextView android:id="@+id/extTrack" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp" android:gravity="center" android:singleLine="true" android:ellipsize="end"
-                    android:textColor="@color/vw_text_primary" android:textSize="20sp"/>
-                <TextView android:id="@+id/extArtist" android:layout_width="match_parent" android:layout_height="wrap_content"
+                <TextView android:id="@+id/npTrack" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp" android:gravity="center" android:singleLine="true" android:ellipsize="end"
+                    android:textColor="@color/vw_text_primary" android:textSize="24sp"/>
+                <TextView android:id="@+id/npArtist" android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:layout_marginTop="4dp" android:gravity="center" android:singleLine="true" android:ellipsize="end"
-                    android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text"/>
+                    android:textColor="@color/vw_text_secondary" android:textSize="@dimen/title_text"/>
+
+                <!-- Реальный прогресс воспроизведения -->
+                <SeekBar android:id="@+id/npSeek" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp" android:progressTint="@color/vw_accent"
+                    android:thumbTint="@color/vw_accent" android:enabled="false"/>
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView android:id="@+id/npPos" android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:textColor="@color/vw_text_disabled" android:textSize="@dimen/small_text" android:text="0:00"/>
+                    <TextView android:id="@+id/npDur" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:textColor="@color/vw_text_disabled" android:textSize="@dimen/small_text" android:text="0:00"/>
+                </LinearLayout>
 
                 <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:layout_marginTop="20dp">
-                    <ImageButton android:id="@+id/btnExtPrev" style="@style/VW.ControlButton.small"
+                    android:orientation="horizontal" android:layout_marginTop="10dp">
+                    <ImageButton android:id="@+id/btnPrev" style="@style/VW.ControlButton"
                         android:src="@drawable/ic_prev" android:contentDescription="@string/media_prev" android:alpha="0.35"/>
-                    <ImageButton android:id="@+id/btnExtPlay" style="@style/VW.ControlButton.small"
+                    <ImageButton android:id="@+id/btnPlay" style="@style/VW.ControlButton.play"
                         android:src="@drawable/ic_play" android:contentDescription="@string/media_play" android:alpha="0.35"/>
-                    <ImageButton android:id="@+id/btnExtNext" style="@style/VW.ControlButton.small"
+                    <ImageButton android:id="@+id/btnNext" style="@style/VW.ControlButton"
                         android:src="@drawable/ic_next" android:contentDescription="@string/media_next" android:alpha="0.35"/>
                 </LinearLayout>
 
-                <TextView android:id="@+id/extStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp" android:gravity="center" android:textColor="@color/vw_text_secondary"
-                    android:textSize="@dimen/small_text" android:text="@string/media_no_session"/>
+                <!-- Системная громкость (AudioManager — поддерживаемый механизм) -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="12dp">
+                    <ImageView android:layout_width="@dimen/icon_sm" android:layout_height="@dimen/icon_sm"
+                        android:src="@drawable/ic_volume" android:contentDescription="@string/media_volume"
+                        android:tint="@color/vw_text_secondary"/>
+                    <SeekBar android:id="@+id/volumeSeek" android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:layout_marginStart="10dp" android:progressTint="@color/vw_accent"
+                        android:thumbTint="@color/vw_accent"/>
+                </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantMediaAccess" style="@style/VW.Button.Accent"
-                    android:layout_width="wrap_content" android:layout_height="@dimen/button_height" android:layout_marginTop="12dp"
-                    android:text="@string/media_grant_access" android:visibility="gone"/>
+                <TextView android:id="@+id/playerStatus" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp" android:gravity="center" android:textColor="@color/vw_text_secondary"
+                    android:textSize="@dimen/small_text" android:text="@string/media_local_empty"/>
+
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_marginTop="10dp">
+                    <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantAudio" style="@style/VW.Button.Accent"
+                        android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
+                        android:text="@string/media_grant_audio" android:visibility="gone"/>
+                    <com.google.android.material.button.MaterialButton android:id="@+id/btnRescan" style="@style/VW.Button"
+                        android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
+                        android:layout_marginStart="10dp" android:text="@string/media_rescan" android:visibility="gone"/>
+                    <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantMediaAccess" style="@style/VW.Button.Accent"
+                        android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
+                        android:layout_marginStart="10dp" android:text="@string/media_grant_access" android:visibility="gone"/>
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/vw_divider"/>
+
+        <!-- Правая колонка: прокручиваемый список треков / плейлист -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="4"
+            android:orientation="vertical" android:padding="@dimen/screen_padding">
+
+            <TextView style="@style/VW.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/media_playlist"/>
+
+            <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+                android:layout_marginTop="8dp">
+                <androidx.recyclerview.widget.RecyclerView android:id="@+id/trackList"
+                    android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:fadeScrollbars="false"/>
+                <TextView android:id="@+id/playlistEmpty" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_gravity="center" android:gravity="center" android:padding="16dp"
+                    android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text"
+                    android:text="@string/media_local_empty" android:visibility="gone"/>
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
