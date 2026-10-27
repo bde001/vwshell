@@ -61,8 +61,10 @@ class VWTile @JvmOverloads constructor(
      * когда Bluetooth-плитка отражает выбранный внешний источник плеера.
      */
     fun setHighlighted(active: Boolean) {
-        val color = if (active) context.resources.getColor(R.color.vw_accent, null)
-            else context.resources.getColor(R.color.vw_icon_tint, null)
+        // androidx-версия: Resources.getColor(int, Theme) требует API 23+ на вызывающей стороне;
+        // на прошивках с заниженным reported-API прямой вызов может кинуть NoSuchMethodError.
+        val color = androidx.core.content.ContextCompat.getColor(
+            context, if (active) R.color.vw_accent else R.color.vw_icon_tint)
         iconView.imageTintList = android.content.res.ColorStateList.valueOf(color)
         labelView.setTextColor(color)
     }
