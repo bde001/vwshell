@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/vw_background">
+
+    <include layout="@layout/layout_section_header"/>
+    <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="horizontal">
+
+        <!-- Левая колонка: поиск адреса и запуск -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="5"
+            android:orientation="vertical" android:padding="@dimen/screen_padding">
+
+            <TextView style="@style/VW.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nav_address_hint"/>
+
+            <EditText android:id="@+id/navAddress"
+                android:layout_width="match_parent" android:layout_height="@dimen/button_height"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_field"
+                android:paddingStart="16dp" android:paddingEnd="16dp"
+                android:textColor="@color/vw_text_primary"
+                android:textColorHint="@color/vw_text_disabled"
+                android:textSize="@dimen/body_text"
+                android:hint="@string/nav_address_hint"
+                android:singleLine="true"
+                android:imeOptions="actionGo"
+                android:inputType="text"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="14dp">
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnNavLaunch"
+                    style="@style/VW.Button.Accent" android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="@dimen/button_height" android:text="@string/nav_launch"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnNavRoute"
+                    style="@style/VW.Button" android:layout_width="0dp" android:layout_weight="1"
+                    android:layout_height="@dimen/button_height" android:layout_marginStart="12dp" android:text="@string/nav_route"/>
+            </LinearLayout>
+
+            <TextView android:id="@+id/navEmpty"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/vw_text_secondary" android:textSize="@dimen/body_text"
+                android:text="@string/nav_none" android:visibility="gone"/>
+        </LinearLayout>
+
+        <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@drawable/divider_h"/>
+
+        <!-- Правая колонка: список установленных навигаторов -->
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="4" android:orientation="vertical">
+            <TextView style="@style/VW.SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:padding="@dimen/screen_padding" android:text="@string/settings_nav_app"/>
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/navAppList"
+                android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+                android:clipToPadding="false" android:paddingBottom="8dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

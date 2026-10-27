@@ -40,6 +40,8 @@
     <string name="media_source">Источник</string>
     <string name="media_pick_app">Выбрать медиаприложение</string>
     <string name="media_track_unknown">Композиция не определена</string>
+    <string name="media_state_playing">Играет</string>
+    <string name="media_state_paused">Пауза</string>
 
     <!-- Телефон -->
     <string name="phone_title">Телефон</string>

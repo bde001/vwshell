@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ячейка параметра автомобиля (только реально полученные из CAN/OEM-API значения) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_panel"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/paramValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="@dimen/header_text"
+        android:singleLine="true"
+        android:ellipsize="end"/>
+
+    <TextView
+        android:id="@+id/paramName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        style="@style/VW.SectionLabel"/>
+</LinearLayout>

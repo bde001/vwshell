@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/vw_background">
+
+    <include layout="@layout/layout_section_header"/>
+    <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:padding="@dimen/screen_padding" android:clipToPadding="false">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+
+            <!-- Статус CAN-интеграции: только реальное состояние -->
+            <TextView android:id="@+id/vehicleStatus"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="@color/vw_text_primary" android:textSize="@dimen/body_text"
+                android:text="@string/vehicle_no_can"/>
+
+            <TextView android:id="@+id/vehicleIntegrationInfo"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_panel"
+                android:padding="16dp"
+                android:textColor="@color/vw_text_secondary" android:textSize="@dimen/small_text"
+                android:text="@string/vehicle_integration_info"/>
+
+            <!-- Сетка реально полученных параметров (заполняется только из CAN/OEM-провайдера) -->
+            <GridLayout android:id="@+id/vehicleGrid"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:columnCount="3"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

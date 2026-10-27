@@ -68,7 +68,8 @@ class MediaMonitor private constructor(context: Context) {
         try {
             // QUERY_ALL_PACKAGES не запрашиваем; getActiveSessions бросает исключение без NLA —
             // при наличии доступа возвращает активные сессии медиаприложений.
-            val sessions = manager.getActiveSessions(componentNames(appContext))
+            val self = componentNames(appContext)[0]
+            val sessions = manager.getActiveSessions(self)
             val active = sessions.firstOrNull { it.playbackState?.state != PlaybackState.STATE_NONE }
                 ?: sessions.firstOrNull()
             attachController(active)

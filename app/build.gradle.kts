@@ -39,6 +39,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     packaging {
         resources.excludes += setOf("META-INF/*.kotlin_module", "DebugProbesKt.bin")

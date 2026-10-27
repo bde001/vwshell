@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
 
     private val clockTicker = object : Runnable {
         override fun run() {
-            binding.clockText.text = clockFormat.format(Date())
+            binding.topBar.clockText.text = clockFormat.format(Date())
             // Часы обновляются раз в 10 секунд — минимальная нагрузка, main thread не блокируется.
             handler.postDelayed(this, 10_000)
         }
@@ -107,20 +107,20 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
         if (currentSectionTag == tag) return
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.vw_enter, R.anim.vw_exit)
-            .replace(R.id.sectionContainer, cls, null, null)
+            .replace(R.id.sectionContainer, EmptyFragment::class.java, null, null)
             .commit()
         binding.sectionContainer.visibility = View.VISIBLE
-        binding.modeText.setText(titleRes)
+        binding.topBar.modeText.setText(titleRes)
         currentSectionTag = tag
     }
 
     fun showHome() {
         supportFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.vw_enter, R.anim.vw_exit)
-            .replace(R.id.sectionContainer, EmptyFragment(), null, null)
+            .replace(R.id.sectionContainer, EmptyFragment::class.java, null, null)
             .commit()
         binding.sectionContainer.visibility = View.GONE
-        binding.modeText.setText(R.string.default_mode)
+        binding.topBar.modeText.setText(R.string.default_mode)
         currentSectionTag = null
     }
 
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
         handler.post(clockTicker)
         MediaMonitor.get(this).refresh()
         updateStatusIcons()
-        if (currentSectionTag == null) binding.modeText.setText(R.string.default_mode)
+        if (currentSectionTag == null) binding.topBar.modeText.setText(R.string.default_mode)
     }
 
     override fun onPause() {
@@ -155,17 +155,17 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
     /** Индикаторы показывают только реально доступные данные; при недоступности скрываются. */
     private fun updateStatusIcons() {
         val bt = AppLauncher.bluetoothState(this)
-        binding.iconBluetooth.visibility = if (bt == null) View.GONE else View.VISIBLE
-        binding.iconBluetooth.alpha = if (bt == true) 1f else 0.35f
+        binding.topBar.iconBluetooth.visibility = if (bt == null) View.GONE else View.VISIBLE
+        binding.topBar.iconBluetooth.alpha = if (bt == true) 1f else 0.35f
 
         // Сотовая сеть: TelephonyManager доступен на магнитолах с SIM. Без данных — скрыть.
         val level = try { AppLauncher.signalLevel(this) } catch (_: Throwable) { null }
         if (level != null) {
-            binding.iconSignal.visibility = View.VISIBLE
-            binding.iconSignal.setImageResource(R.drawable.ic_signal)
-            binding.iconSignal.alpha = (0.4f + 0.6f * level / 4f)
+            binding.topBar.iconSignal.visibility = View.VISIBLE
+            binding.topBar.iconSignal.setImageResource(R.drawable.ic_signal)
+            binding.topBar.iconSignal.alpha = (0.4f + 0.6f * level / 4f)
         } else {
-            binding.iconSignal.visibility = View.GONE
+            binding.topBar.iconSignal.visibility = View.GONE
         }
     }
 
@@ -174,24 +174,25 @@ class MainActivity : AppCompatActivity(), MediaMonitor.Listener {
     override fun onActiveSource(c: MediaController?, sourcePackage: String?) {
         if (!::binding.isInitialized) return
         if (c == null) {
-            binding.sourceIcon.visibility = View.GONE
-            binding.sourceText.setText(R.string.source_none)
+            binding.bottomBar.sourceIcon.visibility = View.GONE
+            binding.bottomBar.sourceText.setText(R.string.source_none)
             return
         }
         val title = c.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE)
         val artist = c.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_ARTIST)
         val playing = c.playbackState?.state == android.media.session.PlaybackState.STATE_PLAYING
-        binding.sourceIcon.visibility = View.VISIBLE
-        binding.sourceIcon.setImageResource(
+        binding.bottomBar.sourceIcon.visibility = View.VISIBLE
+        binding.bottomBar.sourceIcon.setImageResource(
             if (sourcePackage?.contains("bluetooth", true) == true) R.drawable.ic_bluetooth else R.drawable.ic_media)
         val label = when {
             title != null -> listOfNotNull(artist, title).joinToString(" — ")
             sourcePackage != null -> sourcePackage
             else -> getString(R.string.source_none)
         }
-        binding.sourceText.text = (if (playing) "▶ " else "❚❚ ") + label
+        val state = if (playing) getString(R.string.media_state_playing) else getString(R.string.media_state_paused)
+        binding.bottomBar.sourceText.text = "$state — $label"
         // Климат: отображается только при наличии реальных данных от CAN-провайдера — сейчас недоступен → скрыт.
-        binding.climateText.visibility = View.GONE
+        binding.bottomBar.climateText.visibility = View.GONE
     }
 
     // ==================== Аппаратные клавиши (руль/D-pad) ====================

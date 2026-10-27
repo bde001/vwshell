@@ -14,7 +14,7 @@
         android:orientation="vertical">
 
         <!-- Верхняя панель -->
-        <include layout="@layout/view_topbar" android:layout_width="match_parent" android:layout_height="@dimen/topbar_height"/>
+        <include android:id="@+id/topBar" layout="@layout/view_topbar"/>
         <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
 
         <!-- Сетка плиток 3x2 -->
@@ -39,7 +39,7 @@
         <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@drawable/accent_line" android:alpha="0.85"/>
 
         <!-- Нижняя информационная панель -->
-        <include layout="@layout/view_bottombar" android:layout_width="match_parent" android:layout_height="@dimen/bottombar_height"/>
+        <include android:id="@+id/bottomBar" layout="@layout/view_bottombar"/>
     </LinearLayout>
 
     <!-- Контейнер разделов -->

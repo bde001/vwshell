@@ -32,12 +32,13 @@ class NavigationFragment : BaseSectionFragment() {
         list.layoutManager = LinearLayoutManager(requireContext())
 
         val apps = AppLauncher.navigationApps(requireContext())
-        val rows = apps.map { RowItem(it.label, it.packageName,
+        val rows = apps.mapTo(mutableListOf()) { RowItem(it.label, it.packageName,
             checked = prefs.navAppPackage == it.packageName, payload = it.packageName) }
-        val adapter = SimpleRowAdapter(mutableListOf(*rows.toTypedArray()), onClick = { item ->
+        lateinit var adapter: SimpleRowAdapter
+        adapter = SimpleRowAdapter(rows, onClick = { item ->
             prefs.navAppPackage = item.payload as? String
-            rows.forEachIndexed { i, r -> if (r.payload == item.payload) rows[i] = r.copy(checked = true) else rows[i] = r.copy(checked = false) }
-            adapter.notifyDataSetChanged()
+            for (i in rows.indices) rows[i] = rows[i].copy(checked = rows[i].payload == item.payload)
+            adapter.submit(rows)
         })
         list.adapter = adapter
         empty.visibility = if (apps.isEmpty()) View.VISIBLE else View.GONE

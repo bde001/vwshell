@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topBar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/topbar_height"
@@ -19,8 +20,7 @@
         android:fontFamily="sans-serif-light"
         android:letterSpacing="0.02"
         tools:ignore="HardcodedText"
-        android:text="00:00"
-        xmlns:tools="http://schemas.android.com/tools"/>
+        android:text="00:00"/>
 
     <TextView
         android:id="@+id/modeText"

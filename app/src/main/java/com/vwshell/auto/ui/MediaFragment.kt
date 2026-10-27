@@ -109,7 +109,9 @@ class MediaFragment : BaseSectionFragment(), MediaMonitor.Listener {
             PlaybackState.ACTION_SKIP_TO_NEXT -> c.transportControls.skipToNext()
             PlaybackState.ACTION_PLAY -> c.transportControls.play()
             PlaybackState.ACTION_PAUSE -> c.transportControls.pause()
-            PlaybackState.ACTION_PLAY_PAUSE -> c.transportControls.playPause()
+            PlaybackState.ACTION_PLAY_PAUSE -> {
+                if (allowed and PlaybackState.ACTION_PLAY != 0L) c.transportControls.play() else c.transportControls.pause()
+            }
         }
     }
 

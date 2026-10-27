@@ -119,7 +119,7 @@ object AppLauncher {
     fun launchRadio(context: Context, pkg: String?): Boolean {
         if (pkg != null && launchPackage(context, pkg)) return true
         val candidates = listOf(
-            Intent(MediaStore.ACTION_AUDIO_CAPTURE_FM),
+            // MediaStore.ACTION_AUDIO_CAPTURE_FM отсутствует в public SDK API — используем только FM-интенты производителей
             Intent("android.media.action.RADIO"),
             Intent("android.intent.action.RADIO_TUNER_SETTINGS")
         )
@@ -134,8 +134,8 @@ object AppLauncher {
 
     /** Есть ли у устройства FM-тюнер (реальный аппаратный признак). */
     fun hasFmTuner(context: Context): Boolean =
-        context.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_FM_RADIO)
-            || context.packageManager.hasSystemFeature("android.hardware.fm")
+        context.packageManager.hasSystemFeature("android.hardware.fm")
+            || context.packageManager.hasSystemFeature("android.hardware.radio.fm")
 
     /** Состояние Bluetooth: null — адаптера нет/нет доступа; иначе включён ли. */
     @Suppress("MissingPermission")
