@@ -78,9 +78,6 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
     private lateinit var playlistEmpty: TextView
 
     // Служебные кнопки (появляются только при реальной необходимости)
-    private lateinit var grantAudioBtn: MaterialButton
-    private lateinit var rescanBtn: MaterialButton
-    private lateinit var grantAccessBtn: MaterialButton
 
     private var controller: MediaController? = null
     private var engine: LocalPlayerEngine? = null
@@ -122,9 +119,6 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
 
         trackList = view.findViewById(R.id.trackList)
         playlistEmpty = view.findViewById(R.id.playlistEmpty)
-        grantAudioBtn = view.findViewById(R.id.btnGrantAudio)
-        rescanBtn = view.findViewById(R.id.btnRescan)
-        grantAccessBtn = view.findViewById(R.id.btnGrantMediaAccess)
 
         trackList.layoutManager = LinearLayoutManager(requireContext())
         trackList.adapter = trackAdapter
@@ -181,9 +175,6 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
 
         view.findViewById<ImageButton>(R.id.btnRescanIcon).setOnClickListener { loadLibrary() }
 
-        grantAudioBtn.setOnClickListener { (activity as? MainActivity)?.requestAudioPermission() }
-        rescanBtn.setOnClickListener { loadLibrary() }
-        grantAccessBtn.setOnClickListener { openNotificationListenerSettings() }
     }
 
     override fun onResume() {
@@ -325,14 +316,13 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         if (!isAdded) return
         val act = activity as? MainActivity ?: return
         if (!act.hasAudioPermission()) {
-            grantAudioBtn.visibility = View.VISIBLE
-            rescanBtn.visibility = View.GONE
+            // Разрешение запрашивается автоматически в MainActivity при старте лаунчера;
+            // здесь — честное пустое состояние медиатеки без кнопки запроса.
             playlist = emptyList()
             trackAdapter.submit(emptyList())
+            updatePlaylistPanel()
             return
         }
-        grantAudioBtn.visibility = View.GONE
-        rescanBtn.visibility = View.VISIBLE
         playlist = LocalAudioRepository.load(requireContext())
         trackAdapter.submit(playlist.mapIndexed { i, it ->
             RowItem(it.displayTitle, "${it.displayArtist} · ${formatTime(it.durationMs)}", payload = i)
@@ -427,9 +417,6 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         if (!isAdded || !::npTrack.isInitialized) return
         lastSnap = snap
         controller = snap?.controller
-        val hasAccess = MediaMonitor.isNotificationServiceEnabled(requireContext())
-        grantAccessBtn.visibility =
-            if (snap?.controller != null || hasAccess) View.GONE else View.VISIBLE
 
         // Если внешний источник выбран, а сессия пропала (источник отключился) —
         // честно возвращаем UI в состояние «нет источника», не молча переключая выбор.

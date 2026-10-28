@@ -76,5 +76,18 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+        <!--
+          Приёмник аппаратных медиа-кнопок (нужен для MediaSessionManager.getActiveSessions
+          с внешним компонентом — Bluetooth-медиасессии на HU). Никакого приёма A2DP Sink
+          здесь нет: receiver только логирует/маршрутизирует MEDIA_BUTTON.
+        -->
+        <receiver
+            android:name=".core.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

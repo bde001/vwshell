@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Арт-плейсхолдер трека: диагональный градиент #2A0A10 -> #11161D, тонкая рамка #3A1015. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:type="linear"
+        android:angle="315"
+        android:startColor="@color/art_grad_start"
+        android:endColor="@color/art_grad_end" />
+    <stroke android:width="1dp" android:color="@color/art_border" />
+    <corners android:radius="4dp" />
+</shape>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Красная полоска под плиткой: на всю ширину, прижата к нижнему краю, с мягким внешним свечением (layer-list). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- «Свечение»: чуть шире и выше основной полосы, полупрозрачный #FF1A1A -->
+    <item android:bottom="-3dp" android:left="-3dp" android:right="-3dp" android:top="-3dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/stripe_glow"/>
+        </shape>
+    </item>
+    <!-- Основная плоская полоса -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/vw_accent"/>
+        </shape>
+    </item>
+</layer-list>

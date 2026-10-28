@@ -110,12 +110,14 @@ class MediaMonitor private constructor(context: Context) {
         if (currentController === c) return
         currentController?.unregisterCallback(stateCallback)
         currentController = c
+        activeToken = c?.sessionToken
         c?.registerCallback(stateCallback)
     }
 
     private fun detachController() {
         currentController?.unregisterCallback(stateCallback)
         currentController = null
+        activeToken = null
     }
 
     private fun dispatch() {
@@ -149,6 +151,21 @@ class MediaMonitor private constructor(context: Context) {
         private const val DEFAULT_COMP_SUFFIX = "com.vwshell.auto.core.ShellNotificationListener"
 
         private fun componentNames(context: Context) =
-            listOf(ComponentName(context, ShellNotificationListener::class.java))
+            listOf(ComponentName(context, MediaButtonReceiver::class.java))
+
+        /** Токен активной внешней медиасессии (для маршрутизации MEDIA_BUTTON). */
+        @Volatile var activeToken: android.media.session.MediaSession.Token? = null
+
+        fun activeSessionToken(context: Context): android.media.session.MediaSession.Token? {
+            val t = activeToken ?: return null
+            // Проверяем, что токен принадлежит сессии, видимой нашему receiver-компоненту.
+            return runCatching {
+                val mgr = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
+                if (mgr != null) {
+                    val self = componentNames(context)[0]
+                    if (mgr.getActiveSessions(self).any { it.sessionToken == t }) t else null
+                } else null
+            }.getOrNull()
+        }
     }
 }

@@ -8,10 +8,33 @@
     <color name="vw_text_primary">#FFF2F2F2</color>
     <color name="vw_text_secondary">#FF92979C</color>
     <color name="vw_text_disabled">#FF5A5F63</color>
-    <color name="vw_accent">#FFE3182D</color>
+    <color name="vw_accent">#FFFF1A1A</color>
+    <!-- Чистый красный акцент #FF1A1A (по требованию финального визуала VW). -->
     <color name="vw_accent_dark">#FFB01223</color>
     <color name="vw_divider">#FF2A2D30</color>
     <color name="vw_stroke">#FF3A3E42</color>
     <color name="vw_icon_tint">#FFF2F2F2</color>
     <color name="vw_scrim">#B3000000</color>
+
+    <!-- Финальная палитра VW-образца: градиентные фоны плиток/экранов, разделители, текст. -->
+    <color name="tile_grad_top">#3A0810</color>       <!-- тёмно-бордовый верх плитки -->
+    <color name="tile_grad_mid">#1A0408</color>       <!-- 35% -->
+    <color name="tile_grad_bottom">#000000</color>    <!-- 50-100% -->
+    <color name="screen_grad_top">#1A0508</color>     <!-- фон экранов плеера/радио -->
+    <color name="screen_grad_mid">#0A0203</color>     <!-- 40% -->
+    <color name="screen_grad_bottom">#000000</color>
+    <color name="divider_final">#FF2A313B</color>     <!-- разделители -->
+    <color name="text_primary_final">#FFE8EAED</color>
+    <color name="text_secondary_final">#FF9AA0A6</color>
+    <color name="topbar_bg">#FF0B0D10</color>         <!-- верхняя панель 60px -->
+    <color name="topbar_border">#FFFFFFFF</color>     <!-- белая нижняя граница topbar -->
+    <color name="btn_round_bg">#FF1D222A</color>      <!-- круглые кнопки плеера -->
+    <color name="art_grad_start">#FF2A0A10</color>    <!-- арт-плейсхолдер трека -->
+    <color name="art_grad_end">#FF11161D</color>
+    <color name="art_border">#FF3A1015</color>
+    <color name="playlist_grad_start">#FF0F0305</color>
+    <!-- Полупрозрачный красный для «свечения» полоски под плиткой (тот же #FF1A1A, alpha 40%) -->
+    <color name="stripe_glow">#66FF1A1A</color>
+    <!-- Полупрозрачный фон hover/pressed для красных акцентных состояний (alpha 15%) -->
+    <color name="accent_hover_bg">#26FF1A1A</color>
 </resources>

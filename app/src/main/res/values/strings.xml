@@ -138,7 +138,6 @@
 
     <!-- Медиа: доступ к уведомлениям -->
     <string name="media_need_access">Для определения активной медиасессии требуется доступ к уведомлениям (Notification Listener Access). Нажмите «Предоставить доступ» и включите VW Shell в списке системных слушателей, затем вернитесь сюда.</string>
-    <string name="media_grant_access">Предоставить доступ</string>
     <string name="media_settings_missing">Системный экран настроек доступа к уведомлениям недоступен на этой прошивке.</string>
     <string name="media_source_of">Источник: %1$s</string>
     <string name="media_action_unsupported">Текущий источник не поддерживает это действие</string>
@@ -194,7 +193,6 @@
     <string name="media_external_title">Внешний источник</string>
     <string name="media_volume">Громкость</string>
     <string name="media_local_empty">Медиатека пуста. Скопируйте аудиофайлы в внутреннее хранилище магнитолы и нажмите «Обновить список».</string>
-    <string name="media_grant_audio">Доступ к аудио</string>
     <string name="media_rescan">Обновить список</string>
     <string name="vehicle_app_missing">Car Scanner ELM OBD2 не установлен. Открываем страницу установки.</string>
     <string name="home_hint_title">VW Shell как главный экран</string>

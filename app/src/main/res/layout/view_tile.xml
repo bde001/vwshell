@@ -15,11 +15,19 @@
         android:id="@+id/tileLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="28dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="14dp"
         android:textColor="@color/vw_text_primary"
         android:textSize="@dimen/tile_label"
-        android:letterSpacing="0.03"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:letterSpacing="0.15"
+        android:shadowColor="#FF1A1A"
+        android:shadowRadius="4"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:singleLine="true"
+        android:ellipsize="end"
         tools:text="Радио" />
     <View
         android:id="@+id/tileUnderline"
@@ -27,5 +35,5 @@
         android:layout_height="@dimen/tile_underline_h"
         android:layout_gravity="bottom"
         android:alpha="0.9"
-        android:background="@drawable/accent_line" />
+        android:background="@drawable/stripe_bottom_glow" />
 </merge>
