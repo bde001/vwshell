@@ -223,4 +223,5 @@
     <string name="app_no_sound_apps">Звуковые приложения не найдены</string>
     <string name="sys_settings_missing">Системные настройки недоступны</string>
     <string name="splash_logo_desc">Логотип Volkswagen</string>
+    <string name="perm_music_denied">Без разрешения музыка не работает</string>
 </resources>

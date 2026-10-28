@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import androidx.core.app.ActivityCompat
 import android.os.Bundle
 import android.provider.Settings
 import android.view.KeyEvent
@@ -88,6 +89,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        checkAndRequestPermissions() // автоматический запрос разрешений при первом запуске
         setupFullscreen()
         setupPager()
         ShellState.load(this)
@@ -108,6 +110,7 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
 
     companion object {
         const val REQ_AUDIO_PERM_HINT = 101
+        private const val REQ_AUTO_PERMS = 1001
         /** Guard холодного старта: логотип VW показывается один раз за процесс. */
         private var splashShown = false
     }
@@ -554,6 +557,41 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
         Toast.makeText(this, R.string.media_action_unsupported, Toast.LENGTH_SHORT).show()
 
     // ==================== Разрешения от имени MediaFragment ====================
+
+    /**
+     * Автоматический запрос разрешений при первом запуске лаунчера (без кнопки в UI):
+     * API 33+ — READ_MEDIA_AUDIO + POST_NOTIFICATIONS, ниже — READ_EXTERNAL_STORAGE.
+     */
+    private fun checkAndRequestPermissions() {
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(Manifest.permission.READ_MEDIA_AUDIO, Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        val notGranted = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        if (notGranted.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, notGranted.toTypedArray(), REQ_AUTO_PERMS)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_AUTO_PERMS) {
+            if (grantResults.any { it != android.content.pm.PackageManager.PERMISSION_GRANTED }) {
+                Toast.makeText(this, R.string.perm_music_denied, Toast.LENGTH_LONG).show()
+            } else {
+                // разрешение выдано — если открыт раздел плеера, перечитываем медиатеку
+                supportFragmentManager.findFragmentById(R.id.sectionContainer)
+                    ?.let { f -> (f as? com.vwshell.auto.ui.MediaFragment)?.onAudioPermissionResult(true) }
+            }
+        }
+    }
 
     fun requestAudioPermission() {
         val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
