@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Кнопка режима радио: по умолчанию прозрачная (слитная панель), при нажатии — #1d222a -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"><color android:color="#1d222a"/></item>
+    <item android:state_focused="true"><color android:color="#1d222a"/></item>
+    <item><color android:color="#00000000"/></item>
+</selector>

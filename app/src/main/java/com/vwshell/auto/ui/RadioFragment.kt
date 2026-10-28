@@ -66,12 +66,11 @@ class RadioFragment : BaseSectionFragment() {
         refreshStations()
 
         // Предыдущая/следующая — по реально сохранённым пресетам; если их нет — шаг 1.0 МГц.
-        view.findViewById<View>(R.id.btnPrev).setOnClickListener { step(-1) }
-        view.findViewById<View>(R.id.btnNext).setOnClickListener { step(+1) }
+        view.findViewById<View>(R.id.btnRadioPrev).setOnClickListener { step(-1) }
+        view.findViewById<View>(R.id.btnRadioNext).setOnClickListener { step(+1) }
         // Долгое нажатие — тонкая подстройка 0.1 МГц (как крутилка seek на штатном радио).
-        view.findViewById<View>(R.id.btnPrev).setOnLongClickListener { fineStep(-1); true }
-        view.findViewById<View>(R.id.btnNext).setOnLongClickListener { fineStep(+1); true }
-        view.findViewById<View>(R.id.btnSearch).setOnClickListener { seekUp() }
+        view.findViewById<View>(R.id.btnRadioPrev).setOnLongClickListener { fineStep(-1); true }
+        view.findViewById<View>(R.id.btnRadioNext).setOnLongClickListener { fineStep(+1); true }
         favBtn.setOnClickListener {
             val added = prefs.toggleFavorite(freqTenths)
             Toast.makeText(requireContext(),
@@ -81,10 +80,18 @@ class RadioFragment : BaseSectionFragment() {
             updateFavIcon()
         }
 
-        view.findViewById<View>(R.id.btnOpenRadioApp).setOnClickListener {
+        // Нижняя панель режимов (декоративная навигация по образцу VW):
+        // «Источник» реально открывает штатное радио, если оно назначено; остальные режимы — UI-заглушки.
+        view.findViewById<View>(R.id.modeSource).setOnClickListener {
             val ok = AppLauncher.launchRadio(requireContext(), prefs.radioAppPackage)
             if (!ok) Toast.makeText(requireContext(), R.string.not_installed, Toast.LENGTH_SHORT).show()
         }
+        listOf(R.id.modeStation, R.id.modeMemory, R.id.modePreset, R.id.modeManual, R.id.modeSettings)
+            .forEach { id ->
+                view.findViewById<View>(id).setOnClickListener {
+                    Toast.makeText(requireContext(), R.string.unavailable, Toast.LENGTH_SHORT).show()
+                }
+            }
 
         // Статус реального тюнера
         if (!AppLauncher.hasFmTuner(requireContext())) {
@@ -131,11 +138,6 @@ class RadioFragment : BaseSectionFragment() {
     }
 
     private fun fineStep(dir: Int) = setFrequency(FmBand.step(freqTenths, dir, FmBand.STEP_FINE)) // 0.1 МГц = 1
-
-    /** Реальная функция автопоиска возможна только через API тюнера производителя; имитация запрещена. */
-    private fun seekUp() {
-        Toast.makeText(requireContext(), R.string.radio_search_unavailable, Toast.LENGTH_LONG).show()
-    }
 
     private fun setFrequency(tenths: Int) {
         freqTenths = FmBand.clamp(tenths)

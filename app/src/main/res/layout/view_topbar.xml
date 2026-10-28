@@ -1,60 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Верхняя панель главного экрана: часы СТРОГО по центру, дата справа, белая светящаяся линия снизу -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topBar"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/topbar_height"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:background="@color/vw_background"
-    android:paddingStart="@dimen/screen_padding"
-    android:paddingEnd="@dimen/screen_padding">
+    android:layout_height="60dp"
+    android:background="#0b0d10">
+
+    <TextView
+        android:id="@+id/modeText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:alpha="0.55"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="@color/vw_text_secondary"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/clockText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/clockText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/vw_text_primary"
-        android:textSize="@dimen/clock_text"
-        android:fontFamily="sans-serif-light"
+        android:fontFamily="sans-serif-medium"
         android:letterSpacing="0.02"
-        tools:ignore="HardcodedText"
-        android:text="00:00"/>
+        android:text="00:00"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="HardcodedText" />
 
     <TextView
         android:id="@+id/dateText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginEnd="16dp"
         android:textColor="@color/vw_text_secondary"
-        android:textSize="@dimen/small_text"/>
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- modeText используется ТОЛЬКО как заголовок активного раздела; на главном экране пуст -->
-    <TextView
-        android:id="@+id/modeText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:textColor="@color/vw_text_primary"
-        android:textSize="@dimen/title_text"
-        android:letterSpacing="0.06"
-        android:singleLine="true"
-        android:ellipsize="end"/>
-
+    <!-- Индикатор Bluetooth: прижат к верхнему краю, не конфликтует с датой -->
     <ImageView
         android:id="@+id/iconBluetooth"
         android:layout_width="@dimen/icon_sm"
         android:layout_height="@dimen/icon_sm"
-        android:layout_marginEnd="14dp"
+        android:layout_marginEnd="16dp"
         android:src="@drawable/ic_bluetooth"
         android:contentDescription="@string/tile_phone"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/vw_text_secondary" />
 
     <ImageView
         android:id="@+id/iconSignal"
         android:layout_width="@dimen/icon_sm"
         android:layout_height="@dimen/icon_sm"
+        android:layout_marginEnd="48dp"
         android:contentDescription="@string/unavailable"
-        android:visibility="gone"/>
-</LinearLayout>
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,39 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Плитка: иконка сверху, подпись снизу по центру, красная полоска во всю ширину у нижнего края.
+     Родительский контейнер (VWTile) имеет background=@drawable/bg_tile -> tile_bg градиент #3A0810 -> #1a0408 -> #000000 -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+
     <ImageView
         android:id="@+id/tileIcon"
-        android:layout_width="@dimen/tile_icon"
-        android:layout_height="@dimen/tile_icon"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="26dp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_gravity="center"
         android:contentDescription="@null"
-        app:tint="@color/vw_icon_tint"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:tint="@color/vw_text_primary"
         tools:src="@drawable/ic_radio" />
+
     <TextView
         android:id="@+id/tileLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="14dp"
-        android:textColor="@color/vw_text_primary"
-        android:textSize="@dimen/tile_label"
-        android:textStyle="bold"
-        android:textAllCaps="true"
+        android:layout_marginBottom="18dp"
+        android:ellipsize="end"
         android:letterSpacing="0.15"
         android:shadowColor="#FF1A1A"
-        android:shadowRadius="4"
         android:shadowDx="0"
         android:shadowDy="0"
+        android:shadowRadius="4"
         android:singleLine="true"
-        android:ellipsize="end"
-        tools:text="Радио" />
+        android:textAllCaps="true"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        tools:text="РАДИО" />
+
     <View
         android:id="@+id/tileUnderline"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/tile_underline_h"
+        android:layout_height="4dp"
         android:layout_gravity="bottom"
-        android:alpha="0.9"
-        android:background="@drawable/stripe_bottom_glow" />
+        android:background="#FF1A1A"
+        android:elevation="4dp" />
 </merge>

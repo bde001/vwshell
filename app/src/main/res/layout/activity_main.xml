@@ -15,8 +15,6 @@
 
         <!-- Верхняя панель (часы слева, статус справа; без надписи «Режим автомобиля») -->
         <include android:id="@+id/topBar" layout="@layout/view_topbar"/>
-        <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line"
-            android:background="@drawable/accent_line"/>
 
         <!-- Две страницы главного меню, горизонтальный свайп -->
         <androidx.viewpager2.widget.ViewPager2
