@@ -49,6 +49,9 @@ abstract class BaseSectionFragment : Fragment(), MainActivity.BaseSectionMarker,
     /** Обновление часов по системному событию TIME_TICK (см. MainActivity) — без самодельного поллинга. */
     override fun refreshClock() = updateClock()
 
+    /** Фича 3: перерисовка акцентов раздела при смене палитры (переопределяется в плеере/радио). */
+    open fun onPaletteChanged() {}
+
     protected fun updateClock() {
         view?.findViewById<TextView>(R.id.headerClock)?.text = clockFormat.format(Date())
     }

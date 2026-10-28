@@ -32,8 +32,9 @@ class SimpleRowAdapter(
         holder.sub.text = item.subtitle
         holder.sub.visibility = if (item.subtitle.isEmpty()) View.GONE else View.VISIBLE
         holder.check.visibility = if (item.checked) View.VISIBLE else View.GONE
-        // Текущий элемент списка: красная полоска border-left 3dp #FF1A1A (по утверждённой демке)
+        // Текущий элемент списка: красная полоска border-left 3dp в цвете палитры (Фича 3)
         holder.marker.visibility = if (item.checked) View.VISIBLE else View.GONE
+        holder.marker.setBackgroundColor(com.vwshell.auto.core.PaletteManager.accent())
         holder.itemView.setOnClickListener { onClick?.invoke(item) }
     }
 

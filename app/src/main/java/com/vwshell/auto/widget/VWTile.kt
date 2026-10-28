@@ -24,6 +24,13 @@ class VWTile @JvmOverloads constructor(
     /** Кликабельная область — сама плитка (FrameLayout), не включая подпись под ней. */
     private val cardView: android.view.View
 
+    /** Применение runtime-палитры (Фича 3): фон плитки, полоска, shadow подписи. */
+    fun applyPalette() {
+        cardView.background = com.vwshell.auto.core.PaletteManager.tileBackground()
+        underlineView.background = com.vwshell.auto.core.PaletteManager.stripeDrawable()
+        labelView.setShadowLayer(4f, 0f, 0f, com.vwshell.auto.core.PaletteManager.glowShadowColor())
+    }
+
     var onTileClick: (() -> Unit)? = null
     /** Долгое нажатие (например, смена выбранного диагностического приложения). */
     var onTileLongClick: (() -> Unit)? = null
@@ -66,10 +73,10 @@ class VWTile @JvmOverloads constructor(
      * когда плитка отражает выбранный внешний источник плеера.
      */
     fun setHighlighted(active: Boolean) {
-        // androidx-версия: Resources.getColor(int, Theme) требует API 23+ на вызывающей стороне;
-        // на прошивках с заниженным reported-API прямой вызов может кинуть NoSuchMethodError.
-        val color = androidx.core.content.ContextCompat.getColor(
-            context, if (active) R.color.vw_accent else R.color.vw_icon_tint)
+        // Фича 3: подсветка следует выбранной палитре (PaletteManager.accent()),
+        // а не хардкод-ресурсу. androidx ColorStateList — безопасен для заниженных HU API.
+        val color = if (active) com.vwshell.auto.core.PaletteManager.accent()
+                    else androidx.core.content.ContextCompat.getColor(context, R.color.vw_icon_tint)
         iconView.imageTintList = android.content.res.ColorStateList.valueOf(color)
         labelView.setTextColor(color)
     }

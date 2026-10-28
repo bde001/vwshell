@@ -93,13 +93,64 @@ class RadioFragment : BaseSectionFragment() {
                 }
             }
 
-        // Статус реального тюнера
-        if (!AppLauncher.hasFmTuner(requireContext())) {
-            statusText.setText(R.string.radio_no_tuner)
-        } else {
-            statusText.setText(R.string.radio_tuner_ui_only)
-            registerTunerReceiver()
+        // Фича 2: тап по арт-зоне в режиме EXTERNAL_APP запускает найденное приложение радио.
+        view.findViewById<View>(R.id.radioArt).setOnClickListener { onArtTapped() }
+
+        // Статус реального тюнера — Фича 2: честный детектор (кеш 24ч / «пересканировать» в настройках).
+        applyTunerStatus()
+    }
+
+    private var tunerResult: com.vwshell.auto.core.RadioTunerDetector.Result? = null
+
+    /** Определение способа работы радио; эфир НЕ эмулируется ни в одном режиме. */
+    private fun applyTunerStatus() {
+        val res = com.vwshell.auto.core.RadioTunerDetector.detectCached(requireContext())
+        tunerResult = res
+        when (res.kind) {
+            com.vwshell.auto.core.RadioTunerDetector.TunerKind.NATIVE_TUNER -> {
+                statusText.text = getString(R.string.radio_tuner_found, res.packageName ?: "")
+                // TODO connectVendorTuner(): реальное управление OEM-тюнером требует вендорского API
+                //  конкретной прошивки; без него показанная частота остаётся UI-настройкой.
+                registerTunerReceiver()
+            }
+            com.vwshell.auto.core.RadioTunerDetector.TunerKind.EXTERNAL_APP -> {
+                statusText.text = getString(R.string.radio_ext_app_found, res.label ?: res.packageName ?: "")
+            }
+            com.vwshell.auto.core.RadioTunerDetector.TunerKind.STUB -> {
+                statusText.setText(R.string.radio_stub_status)
+            }
         }
+    }
+
+    /** Тап по арт-зоне в режиме EXTERNAL_APP — запуск найденного приложения радио. */
+    private fun onArtTapped() {
+        val res = tunerResult ?: return
+        if (res.kind == com.vwshell.auto.core.RadioTunerDetector.TunerKind.EXTERNAL_APP) {
+            if (!com.vwshell.auto.core.RadioTunerDetector.openExternalApp(requireContext(), res)) {
+                Toast.makeText(requireContext(), R.string.not_installed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /** Фича 3: акцент панели режимов и кнопок ‹ › в цвете палитры. */
+    override fun onPaletteChanged() {
+        if (!isAdded || !::statusText.isInitialized) return
+        val accent = com.vwshell.auto.core.PaletteManager.accent()
+        view?.findViewById<View>(R.id.radioModeBar)?.let { bar ->
+            val d = android.graphics.drawable.GradientDrawable().apply {
+                setColor(accent); setSize(1, (2 * resources.displayMetrics.density).toInt())
+            }
+            bar.background = layerWithTopLine(bar, d)
+        }
+        applyTunerStatus()
+    }
+
+    private fun layerWithTopLine(anchor: View, top: android.graphics.drawable.Drawable): android.graphics.drawable.LayerDrawable {
+        val base = android.graphics.drawable.ColorDrawable(
+            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.vw_panel_bg))
+        val layer = android.graphics.drawable.LayerDrawable(arrayOf(base, top))
+        layer.setLayerInset(1, 0, 0, 0, anchor.height.coerceAtLeast(1) - top.getIntrinsicHeight().coerceAtLeast(2))
+        return layer
     }
 
     /** Приёмник OEM-широковещания изменения частоты: обновляет UI только реальными данными тюнера. */

@@ -68,6 +68,15 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
     private var currentSectionTag: String? = null
     private var receiverRegistered = false
     private val transportBoundMarker = Any()
+    private var homeAdapter: HomePageAdapter? = null
+
+    /** Фича 3: смена палитры — перерисовать сетку и видимые разделы. */
+    private val paletteListener = object : com.vwshell.auto.core.PaletteManager.Listener {
+        override fun onPaletteChanged(accent: Int) {
+            homeAdapter?.refreshAll()
+            sectionFragments().forEach { it.onPaletteChanged() }
+        }
+    }
 
     private val timeTickReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -96,6 +105,12 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
         ShellState.init(this)
         ShellState.addListener(this, this)
         PlayerSource.restoreFromPrefs(this)
+        // Фича 3: runtime-палитра (дефолт #FF1A1A == текущий vw_accent — визуал не меняется).
+        com.vwshell.auto.core.PaletteManager.init(this)
+        com.vwshell.auto.core.PaletteManager.initDensity(this)
+        com.vwshell.auto.core.PaletteManager.addListener(paletteListener)
+        // Фича 1: автоопределение BT-источника (MediaSessionManager listener + BT receiver).
+        com.vwshell.auto.core.BluetoothAutoSwitch.start(this)
 
         binding.topBar.modeText.text = "" // на главном экране заголовок раздела пуст
 
@@ -156,6 +171,8 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
 
     override fun onDestroy() {
         ShellState.removeListener(this)
+        com.vwshell.auto.core.PaletteManager.removeListener(paletteListener)
+        com.vwshell.auto.core.BluetoothAutoSwitch.stop(this) // Фича 1: аннрегистрация слушателей
         super.onDestroy()
     }
 
@@ -381,7 +398,9 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
     ) + List(6) { TileSpec(empty = true) }
 
     private fun setupPager() {
-        binding.pager.adapter = HomePageAdapter(listOf(pageOneTiles(), pageTwoTiles()))
+        val adapter = HomePageAdapter(listOf(pageOneTiles(), pageTwoTiles()))
+        homeAdapter = adapter
+        binding.pager.adapter = adapter
         binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) = updatePageDots(position)
         })
@@ -430,11 +449,17 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
                 } else {
                     tile.visibility = View.VISIBLE
                     tile.setup(spec.icon, spec.label)
+                    tile.applyPalette() // Фича 3: runtime-палитра (фон/полоска/shadow подписи)
                     tile.onTileClick = spec.action
                     tile.onTileLongClick = spec.onLong
                     tile.setHighlighted(spec.highlight?.invoke() == true)
                 }
             }
+        }
+
+        /** Полная перерисовка страниц (смена палитры — Фича 3). */
+        fun refreshAll() {
+            for (i in 0 until itemCount) notifyItemChanged(i)
         }
     }
 

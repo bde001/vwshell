@@ -221,15 +221,29 @@ class MediaFragment : BaseSectionFragment(), ShellState.Listener, LocalPlayerEng
         val external = PlayerSource.kind == PlayerSource.Kind.EXTERNAL
         sourceLabel.setText(if (external) R.string.tile_bluetooth_source else R.string.media_local_title)
         sourceIcon.setImageResource(if (external) R.drawable.ic_bluetooth else R.drawable.ic_media)
-        val tint = if (external) R.color.vw_accent else R.color.vw_text_secondary
-        sourceIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), tint)
+        val accent = com.vwshell.auto.core.PaletteManager.accent()
+        val tint = if (external) accent else ContextCompat.getColor(requireContext(), R.color.vw_text_secondary)
+        sourceIcon.imageTintList = android.content.res.ColorStateList.valueOf(tint)
         // Красная подсветка кнопки переключения при активном внешнем источнике.
-        btnSwitchSource.imageTintList = ContextCompat.getColorStateList(
-            requireContext(), if (external) R.color.vw_accent else R.color.vw_icon_tint)
+        btnSwitchSource.imageTintList = android.content.res.ColorStateList.valueOf(
+            if (external) accent else ContextCompat.getColor(requireContext(), R.color.vw_icon_tint))
         // Вертикальная громкость — регулятор локального плеера; при внешнем источнике неактивна.
         volumeColumn.isEnabled = !external
         volumeSeekVertical.isEnabled = !external
         volumeSeekVertical.alpha = if (external) 0.35f else 1f
+    }
+
+    /** Фича 3: мгновенное применение новой палитры к акцентам плеера. */
+    override fun onPaletteChanged() {
+        if (!isAdded || !::npTrack.isInitialized) return
+        val accent = com.vwshell.auto.core.PaletteManager.accent()
+        npSeek.progressTintList = android.content.res.ColorStateList.valueOf(accent)
+        npSeek.thumbTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
+        volumeSeekVertical.progressTintList = android.content.res.ColorStateList.valueOf(accent)
+        volumeSeekVertical.thumbTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.WHITE)
+        view?.findViewById<android.widget.TextView>(R.id.playlistTitle)?.setTextColor(accent)
+        updateSourceBar()
+        updatePlaylistHighlightOnly()
     }
 
     private fun renderLocal() {

@@ -88,6 +88,36 @@ class Prefs private constructor(context: Context) {
 
     fun setHiddenApps(set: Set<String>) = sp.edit().putStringSet(KEY_HIDDEN_APPS, set).apply()
 
+    /** Фича 1: автопереключение источника плеера по играющей внешней медиасессии (BT). По умолчанию вкл. */
+    var btAutoSwitch: Boolean
+        get() = sp.getBoolean(KEY_BT_AUTO_SWITCH, true)
+        set(v) = sp.edit().putBoolean(KEY_BT_AUTO_SWITCH, v).apply()
+
+    /** Фича 3: акцентный цвет палитры (ARGB int). Дефолт #FF1A1A. */
+    var paletteAccent: Int
+        get() = sp.getInt(KEY_PALETTE_ACCENT, 0xFFFF1A1A.toInt())
+        set(v) = sp.edit().putInt(KEY_PALETTE_ACCENT, v).apply()
+
+    /** Фича 2: кеш результата детектора тюнера (kind|pkg|label + timestamp). */
+    fun tunerCache(): Pair<Triple<String, String?, String?>, Long>? {
+        val raw = sp.getString(KEY_TUNER_CACHE, null) ?: return null
+        val ts = sp.getLong(KEY_TUNER_CACHE_TS, 0L)
+        val parts = raw.split("|")
+        if (parts.isEmpty()) return null
+        val pkg = parts.getOrNull(1)?.ifBlank { null }
+        val label = parts.getOrNull(2)?.ifBlank { null }
+        return Triple(parts[0], pkg, label) to ts
+    }
+
+    fun setTunerCache(res: RadioTunerDetector.Result) =
+        sp.edit()
+            .putString(KEY_TUNER_CACHE, "${res.kind.name}|${res.packageName ?: ""}|${res.label ?: ""}")
+            .putLong(KEY_TUNER_CACHE_TS, System.currentTimeMillis())
+            .apply()
+
+    fun clearTunerCache() =
+        sp.edit().remove(KEY_TUNER_CACHE).remove(KEY_TUNER_CACHE_TS).apply()
+
     /** 24-часовой формат времени (настройка интерфейса оболочки). */
     var clock24h: Boolean
         get() = sp.getBoolean(KEY_CLOCK_24H, true)
@@ -123,6 +153,10 @@ class Prefs private constructor(context: Context) {
         private const val KEY_VEHICLE = "vehicle_app"
         private const val KEY_APPCONNECT = "appconnect_app_package"
         private const val KEY_SOUND_APP = "sound_app_package"
+        private const val KEY_BT_AUTO_SWITCH = "bt_auto_switch"
+        private const val KEY_PALETTE_ACCENT = "palette_accent"
+        private const val KEY_TUNER_CACHE = "tuner_cache"
+        private const val KEY_TUNER_CACHE_TS = "tuner_cache_ts"
         private const val KEY_HOME_HINT = "home_hint_dismissed"
         /** Car Scanner ELM OBD2 (поддерживает VW/Audi, в т.ч. Golf IV BCB через ELM327). */
         const val DEFAULT_VEHICLE_PKG = "com.mgmadv.carscanner.elm.free"

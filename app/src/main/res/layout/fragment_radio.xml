@@ -68,7 +68,7 @@
     </LinearLayout>
 
     <!-- Нижняя панель режимов: 6 слитных кнопок, border-top 2dp #FF1A1A, SVG-иконки -->
-    <LinearLayout android:layout_width="match_parent" android:layout_height="90dp"
+    <LinearLayout android:id="@+id/radioModeBar" android:layout_width="match_parent" android:layout_height="90dp"
         android:background="@drawable/bg_radio_panel" android:orientation="horizontal" android:weightSum="6">
         <LinearLayout android:id="@+id/modeSource" style="@style/VW.RadioModeButton">
             <ImageView android:layout_width="28dp" android:layout_height="28dp"
