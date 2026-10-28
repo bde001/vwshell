@@ -4,41 +4,46 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.animation.DecelerateInterpolator
-import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import com.vwshell.auto.R
 
 /**
- * Переиспользуемая плитка главного экрана в стиле Discover Pro:
- * тёмно-графитовый фон, тонкая серая рамка, белая иконка, подпись, красное подчёркивание.
+ * Плитка главного экрана в стиле Discover Pro.
+ * Корневой layout (view_tile.xml) — вертикальный LinearLayout:
+ * FrameLayout-плитка с градиентом и красной полоской снизу, а подпись tileLabel — СТРОГО ПОД плиткой.
  */
 class VWTile @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : LinearLayout(context, attrs, defStyleAttr) {
 
     private val iconView: ImageView
     private val labelView: TextView
     private val underlineView: android.view.View
+    /** Кликабельная область — сама плитка (FrameLayout), не включая подпись под ней. */
+    private val cardView: android.view.View
 
     var onTileClick: (() -> Unit)? = null
     /** Долгое нажатие (например, смена выбранного диагностического приложения). */
     var onTileLongClick: (() -> Unit)? = null
 
     init {
+        orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_tile, this, true)
         iconView = findViewById(R.id.tileIcon)
         labelView = findViewById(R.id.tileLabel)
         underlineView = findViewById(R.id.tileUnderline)
+        cardView = findViewById(R.id.tileCard)
 
+        // Клик/долгое нажатие — на весь item (как требует адаптер), обратная связь — на самой плитке.
         isClickable = true
         isFocusable = true
-        // OEM-состояние нажатия: лёгкое изменение фона + анимация подчёркивания
-        super.setOnClickListener { v ->
+        setOnClickListener {
             animateUnderline()
             postDelayed({ onTileClick?.invoke() }, 90) // короткая пауза для тактильной обратной связи, без блокировки UI-потока
         }
-        super.setOnLongClickListener {
+        setOnLongClickListener {
             onTileLongClick?.invoke()
             onTileLongClick != null
         }
@@ -57,8 +62,8 @@ class VWTile @JvmOverloads constructor(
     }
 
     /**
-     * Активная подсветка плитки (красный акцент Volkswagen #E3182D) — например,
-     * когда Bluetooth-плитка отражает выбранный внешний источник плеера.
+     * Активная подсветка плитки (красный акцент #FF1A1A через vw_accent) — например,
+     * когда плитка отражает выбранный внешний источник плеера.
      */
     fun setHighlighted(active: Boolean) {
         // androidx-версия: Resources.getColor(int, Theme) требует API 23+ на вызывающей стороне;

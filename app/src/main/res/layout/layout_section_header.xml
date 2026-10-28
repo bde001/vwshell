@@ -63,7 +63,7 @@
     <View
         android:layout_width="0dp"
         android:layout_height="2dp"
-        android:background="#FFFFFF"
+        android:background="@drawable/topbar_white_glow"
         android:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
