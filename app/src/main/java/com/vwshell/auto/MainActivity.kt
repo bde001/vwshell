@@ -164,21 +164,29 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
 
     /** Полноэкранный OEM-режим; системные жесты и диалоги разрешений остаются рабочими. */
     private fun setupFullscreen() {
-        window.setDecorFitsSystemWindows(false)
-        val controller = window.insetsController
-        if (controller != null) {
-            controller.hide(WindowInsets.Type.systemBars())
-            controller.systemBarsBehavior =
-                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        } else {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Window.setDecorFitsSystemWindows(), Window.insetsController and
+            // WindowInsets.Type are API 30+. Calling them unconditionally crashes
+            // Android 10 (API 29) devices before the first frame is drawn.
+            window.setDecorFitsSystemWindows(false)
+            val controller = window.insetsController
+            if (controller != null) {
+                controller.hide(WindowInsets.Type.systemBars())
+                controller.systemBarsBehavior =
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                return
+            }
         }
+
+        // Legacy implementation for Android 8–10 and as a safe fallback if the
+        // platform does not expose WindowInsetsController.
+        @Suppress("DEPRECATION")
+        window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
