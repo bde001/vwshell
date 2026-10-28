@@ -35,19 +35,24 @@
         android:orientation="horizontal" android:baselineAligned="false">
 
         <!-- Крайняя левая узкая колонка: ВЕРТИКАЛЬНЫЙ регулятор громкости локального плеера -->
-        <FrameLayout android:id="@+id/volumeColumn"
-            android:layout_width="wrap_content" android:layout_height="match_parent"
-            android:paddingStart="6dp" android:paddingEnd="2dp">
+        <FrameLayout
+            android:id="@+id/volumeColumn"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:clipChildren="true"
+            android:padding="8dp">
+
             <SeekBar
                 android:id="@+id/volumeSeekVertical"
-                android:layout_width="300dp"
+                android:layout_width="160dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
                 android:max="100"
-                android:progressTint="@color/vw_accent"
+                android:progress="65"
+                android:progressTint="#FF1A1A"
                 android:thumbTint="#FFFFFF"
                 android:rotation="270"
-                android:contentDescription="@string/media_volume"/>
+                android:splitTrack="false" />
         </FrameLayout>
 
         <!-- Левая колонка: обложка, название, исполнитель, основные элементы управления -->

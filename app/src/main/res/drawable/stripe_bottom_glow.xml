@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Красная полоска под плиткой: на всю ширину, прижата к нижнему краю, с мягким внешним свечением (layer-list). -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- «Свечение»: чуть шире и выше основной полосы, полупрозрачный #FF1A1A -->
-    <item android:bottom="-3dp" android:left="-3dp" android:right="-3dp" android:top="-3dp">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/stripe_glow"/>
-        </shape>
-    </item>
-    <!-- Основная плоская полоса -->
+    <!-- Основная красная линия -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/vw_accent"/>
+            <solid android:color="#FF1A1A" />
+            <corners android:bottomLeftRadius="10dp" android:bottomRightRadius="10dp" />
+        </shape>
+    </item>
+    <!-- Градиентное свечение вверх -->
+    <item android:top="2dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="#99FF1A1A"
+                android:centerColor="#33FF1A1A"
+                android:endColor="#00FF1A1A" />
         </shape>
     </item>
 </layer-list>

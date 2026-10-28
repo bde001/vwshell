@@ -1,25 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Плитка: иконка сверху, подпись снизу по центру, красная полоска во всю ширину у нижнего края.
-     Родительский контейнер (VWTile) имеет background=@drawable/bg_tile -> tile_bg градиент #3A0810 -> #1a0408 -> #000000 -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
 
-    <ImageView
-        android:id="@+id/tileIcon"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:layout_gravity="center"
-        android:contentDescription="@null"
-        app:tint="@color/vw_text_primary"
-        tools:src="@drawable/ic_radio" />
+    <!-- Сама плитка с градиентным фоном -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@drawable/tile_bg"
+        android:clickable="true"
+        android:focusable="true">
 
+        <ImageView
+            android:id="@+id/tileIcon"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_gravity="center"
+            app:tint="#e8eaed" />
+
+        <View
+            android:id="@+id/tileUnderline"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/stripe_bottom_glow" />
+    </FrameLayout>
+
+    <!-- Надпись СТРОГО ПОД плиткой -->
     <TextView
         android:id="@+id/tileLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="18dp"
+        android:layout_marginTop="10dp"
         android:ellipsize="end"
         android:letterSpacing="0.15"
         android:shadowColor="#FF1A1A"
@@ -28,16 +43,7 @@
         android:shadowRadius="4"
         android:singleLine="true"
         android:textAllCaps="true"
-        android:textColor="@color/vw_text_primary"
+        android:textColor="#e8eaed"
         android:textSize="20sp"
-        android:textStyle="bold"
-        tools:text="РАДИО" />
-
-    <View
-        android:id="@+id/tileUnderline"
-        android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:layout_gravity="bottom"
-        android:background="#FF1A1A"
-        android:elevation="4dp" />
-</merge>
+        android:textStyle="bold" />
+</LinearLayout>
