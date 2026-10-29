@@ -2,8 +2,9 @@
 <!-- Единый экран плеера: слева — текущий трек и управление, справа — прокручиваемый список. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="@drawable/bg_screen_gradient">
+    android:orientation="vertical" android:background="@color/vw_background">
     <include layout="@layout/layout_section_header"/>
+    <View android:layout_width="match_parent" android:layout_height="@dimen/accent_line" android:background="@drawable/accent_line"/>
 
     <!-- Индикатор выбранного источника (локальный / внешняя медиасессия) + переключатель -->
     <LinearLayout android:id="@+id/sourceBar"
@@ -35,37 +36,31 @@
         android:orientation="horizontal" android:baselineAligned="false">
 
         <!-- Крайняя левая узкая колонка: ВЕРТИКАЛЬНЫЙ регулятор громкости локального плеера -->
-        <FrameLayout
-            android:id="@+id/volumeColumn"
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:clipChildren="true"
-            android:padding="8dp">
-
+        <FrameLayout android:id="@+id/volumeColumn"
+            android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone">
             <SeekBar
                 android:id="@+id/volumeSeekVertical"
-                android:layout_width="160dp"
+                android:layout_width="300dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
                 android:max="100"
-                android:progress="65"
-                android:progressTint="#FF1A1A"
-                android:thumbTint="#FFFFFF"
+                android:progressTint="@color/vw_accent"
+                android:thumbTint="@color/vw_accent"
                 android:rotation="270"
-                android:splitTrack="false" />
+                android:contentDescription="@string/media_volume"/>
         </FrameLayout>
 
         <!-- Левая колонка: обложка, название, исполнитель, основные элементы управления -->
         <ScrollView android:id="@+id/nowPlayingPanel"
-            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="7"
+            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="5"
             android:fillViewport="true">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="vertical" android:gravity="center" android:padding="@dimen/screen_padding">
 
                 <ImageView android:id="@+id/npArt"
-                    android:layout_width="170dp" android:layout_height="170dp"
+                    android:layout_width="180dp" android:layout_height="180dp"
                     android:scaleType="centerInside"
-                    android:background="@drawable/bg_album_art"
+                    android:background="@drawable/bg_tile"
                     android:src="@drawable/ic_album"
                     android:contentDescription="@string/media_local_title"/>
 
@@ -78,8 +73,8 @@
 
                 <!-- Реальный прогресс воспроизведения -->
                 <SeekBar android:id="@+id/npSeek" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp" android:progressTint="@color/vw_accent"
-                    android:thumbTint="#FFFFFF" android:enabled="false"/>
+                    android:layout_marginTop="14dp" android:minHeight="48dp" android:progressTint="@color/vw_accent"
+                    android:thumbTint="@color/vw_accent" android:enabled="false"/>
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal">
                     <TextView android:id="@+id/npPos" android:layout_width="0dp" android:layout_height="wrap_content"
@@ -110,23 +105,42 @@
                         android:src="@drawable/ic_next" android:contentDescription="@string/media_next" android:alpha="0.35"/>
                 </LinearLayout>
 
-                <!-- Нижняя текстовая строка статуса убрана; горизонтальная громкость заменена вертикальной слева -->
+                <!-- Крупный горизонтальный регулятор системной громкости — удобнее на сенсорном экране. -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp" android:gravity="center_vertical" android:orientation="horizontal"
+                    android:background="@drawable/bg_panel" android:paddingStart="12dp" android:paddingEnd="12dp">
+                    <ImageView android:layout_width="32dp" android:layout_height="32dp"
+                        android:src="@drawable/ic_volume" android:tint="@color/vw_icon_tint"
+                        android:contentDescription="@string/media_volume"/>
+                    <SeekBar android:id="@+id/volumeSeek" android:layout_width="0dp" android:layout_height="56dp"
+                        android:layout_weight="1" android:paddingStart="12dp" android:paddingEnd="12dp"
+                        android:progressTint="@color/vw_accent" android:thumbTint="@color/vw_accent"
+                        android:contentDescription="@string/media_volume"/>
+                </LinearLayout>
                 <View android:id="@+id/playerStatus" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
-                <SeekBar android:id="@+id/volumeSeek" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
 
-                
+                <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:layout_gravity="center_horizontal" android:layout_marginTop="10dp">
+                    <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantAudio" style="@style/VW.Button.Accent"
+                        android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
+                        android:text="@string/media_grant_audio" android:visibility="gone"/>
+                    <com.google.android.material.button.MaterialButton android:id="@+id/btnRescan" style="@style/VW.Button"
+                        android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
+                        android:layout_marginStart="10dp" android:text="@string/media_rescan" android:visibility="gone"/>
+                    <com.google.android.material.button.MaterialButton android:id="@+id/btnGrantMediaAccess" style="@style/VW.Button.Accent"
+                        android:layout_width="wrap_content" android:layout_height="@dimen/button_height"
+                        android:layout_marginStart="10dp" android:text="@string/media_grant_access" android:visibility="gone"/>
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
 
         <View android:layout_width="1dp" android:layout_height="match_parent" android:background="@color/vw_divider"/>
 
         <!-- Правая колонка: прокручиваемый список треков / плейлист -->
-        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="3"
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="4"
             android:orientation="vertical" android:padding="@dimen/screen_padding">
 
-            <TextView android:id="@+id/playlistTitle" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium" android:letterSpacing="0.12" android:textAllCaps="true"
-                android:textColor="#FF1A1A" android:textSize="@dimen/small_text"
+            <TextView style="@style/VW.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="@string/media_playlist"/>
 
             <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"

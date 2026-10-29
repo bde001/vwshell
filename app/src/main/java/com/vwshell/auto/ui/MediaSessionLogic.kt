@@ -25,7 +25,11 @@ object MediaSessionLogic {
      * @return true — можно играть, false — можно ставить на паузу, null — ничего не поддерживается.
      */
     fun playOrPause(state: PlaybackState?): Boolean? {
-        if (isPlaying(state)) return if (canPause(state)) false else null
+        if (isPlaying(state)) return when {
+            canPause(state) -> false
+            supports(state, PlaybackState.ACTION_PLAY_PAUSE) -> false
+            else -> null
+        }
         if (canPlay(state)) return true
         // Некоторые сессии объявляют только ACTION_PLAY_PAUSE — трактуем как «можно играть/паузу».
         if (supports(state, PlaybackState.ACTION_PLAY_PAUSE)) return !isPlaying(state)

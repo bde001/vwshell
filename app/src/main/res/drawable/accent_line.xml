@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Белая линия под верхней панелью (по утверждённой демке) -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#FFFFFF"/>
+    <solid android:color="@color/vw_accent"/>
 </shape>

@@ -25,6 +25,7 @@ object ShellState {
         val artist: String?,
         val album: String?,
         val artwork: android.graphics.Bitmap?,
+        val artworkUri: String?,
         val playing: Boolean,
         val actions: Long,
         val positionMs: Long,
@@ -68,7 +69,7 @@ object ShellState {
     fun save(context: Context) {
         val p = Prefs.get(context)
         val snap = current
-        if (snap?.controller != null) {
+        if (snap != null && snap.controller != null) {
             p.lastMediaPackage = snap.sourcePackage
             p.lastMediaLabel = AppLauncher.appLabel(context, snap.sourcePackage) ?: snap.sourcePackage
         } else if (lastKnownSource != null) {
@@ -116,12 +117,22 @@ object ShellState {
         return MediaSnapshot(
             controller = c,
             sourcePackage = pkg,
-            title = md?.getString(MediaMetadata.METADATA_KEY_TITLE),
-            artist = md?.getString(MediaMetadata.METADATA_KEY_ARTIST),
+            title = md?.getString(MediaMetadata.METADATA_KEY_TITLE)
+                ?: md?.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE),
+            artist = md?.getString(MediaMetadata.METADATA_KEY_ARTIST)
+                ?: md?.getString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE)
+                ?: md?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST),
             album = md?.getString(MediaMetadata.METADATA_KEY_ALBUM),
             // Реальные обложки: только если сессия передала битмап (METADATA_KEY_ART/ALBUM_ART).
-            artwork = md?.getBitmap(MediaMetadata.METADATA_KEY_ART)
-                ?: md?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART),
+            artwork = (try { md?.getBitmap(MediaMetadata.METADATA_KEY_ART) }
+                catch (_: Exception) { null })
+                ?: (try { md?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART) }
+                catch (_: Exception) { null })
+                ?: (try { md?.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON) }
+                catch (_: Exception) { null }),
+            artworkUri = md?.getString(MediaMetadata.METADATA_KEY_ART_URI)
+                ?: md?.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI)
+                ?: md?.getString(MediaMetadata.METADATA_KEY_DISPLAY_ICON_URI),
             playing = ps?.state == PlaybackState.STATE_PLAYING || ps?.state == PlaybackState.STATE_BUFFERING,
             actions = ps?.actions ?: 0L,
             positionMs = ps?.position ?: -1L,

@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.SeekBar
 import com.vwshell.auto.BuildConfig
 import com.vwshell.auto.R
 import android.widget.Toast
@@ -88,6 +89,39 @@ class SettingsFragment : BaseSectionFragment() {
             refreshValues()
         }
 
+        // Геометрия плиток: оба параметра сохраняются и применяются сразу, без перезапуска.
+        val tileSpacingSeek = view.findViewById<SeekBar>(R.id.tileSpacingSeek)
+        val tileVerticalSeek = view.findViewById<SeekBar>(R.id.tileVerticalSpacingSeek)
+        val tileSpacingLabel = view.findViewById<TextView>(R.id.tileSpacingLabel)
+        val tileVerticalLabel = view.findViewById<TextView>(R.id.tileVerticalSpacingLabel)
+        tileSpacingSeek.progress = (prefs.tileSpacingDp - 4).coerceIn(0, 20)
+        tileVerticalSeek.progress = (18 - prefs.tileVerticalSpacingDp).coerceIn(0, 18)
+        fun updateTileLabels() {
+            tileSpacingLabel.text = getString(R.string.settings_tile_spacing) + ": " + getString(R.string.settings_tile_spacing_value, prefs.tileSpacingDp)
+            tileVerticalLabel.text = getString(R.string.settings_tile_vertical_spacing) + ": " + getString(R.string.settings_tile_spacing_value, prefs.tileVerticalSpacingDp)
+        }
+        updateTileLabels()
+        tileSpacingSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (!fromUser) return
+                prefs.tileSpacingDp = progress + 4
+                updateTileLabels()
+                (activity as? com.vwshell.auto.MainActivity)?.applyHomeTileLayout()
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+        tileVerticalSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (!fromUser) return
+                prefs.tileVerticalSpacingDp = 18 - progress
+                updateTileLabels()
+                (activity as? com.vwshell.auto.MainActivity)?.applyHomeTileLayout()
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
         // Раздел «Звук» из настроек
         view.findViewById<View>(R.id.rowSoundSection).setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -154,82 +188,8 @@ class SettingsFragment : BaseSectionFragment() {
                 .show()
         }
 
-
-        // ==== Фича 3: свотчи палитры ====
-        buildPaletteRow(view)
-        com.vwshell.auto.core.PaletteManager.addListener(paletteListener)
-
-        // ==== Фича 1: тумблер автопереключения BT ====
-        val valBt = view.findViewById<TextView>(R.id.valBtAuto)
-        fun refreshBt() { valBt.setText(if (prefs.btAutoSwitch) R.string.on else R.string.off) }
-        refreshBt()
-        view.findViewById<View>(R.id.rowBtAutoSwitch).setOnClickListener {
-            prefs.btAutoSwitch = !prefs.btAutoSwitch
-            refreshBt()
-            if (prefs.btAutoSwitch) com.vwshell.auto.core.BluetoothAutoSwitch.refreshNow()
-        }
-
-        // ==== Фича 2: пересканирование тюнера ====
-        val valTuner = view.findViewById<TextView>(R.id.valTunerStatus)
-        fun refreshTuner(res: com.vwshell.auto.core.RadioTunerDetector.Result) {
-            valTuner.text = when (res.kind) {
-                com.vwshell.auto.core.RadioTunerDetector.TunerKind.NATIVE_TUNER ->
-                    getString(R.string.radio_tuner_found, res.packageName ?: "")
-                com.vwshell.auto.core.RadioTunerDetector.TunerKind.EXTERNAL_APP ->
-                    getString(R.string.radio_ext_app_found, res.label ?: res.packageName ?: "")
-                com.vwshell.auto.core.RadioTunerDetector.TunerKind.STUB ->
-                    getString(R.string.radio_stub_status)
-            }
-        }
-        refreshTuner(com.vwshell.auto.core.RadioTunerDetector.detectCached(requireContext()))
-        view.findViewById<View>(R.id.rowRescanTuner).setOnClickListener {
-            com.vwshell.auto.core.RadioTunerDetector.resetCache(requireContext())
-            val res = com.vwshell.auto.core.RadioTunerDetector.detect(requireContext())
-            com.vwshell.auto.core.Prefs.get(requireContext()).setTunerCache(res)
-            refreshTuner(res)
-            Toast.makeText(requireContext(), valTuner.text, Toast.LENGTH_LONG).show()
-        }
-
         view.findViewById<TextView>(R.id.aboutText).text =
             getString(R.string.settings_about_text, BuildConfig.VERSION_NAME)
-    }
-
-
-    private val paletteListener = object : com.vwshell.auto.core.PaletteManager.Listener {
-        override fun onPaletteChanged(accent: Int) { buildPaletteRow(view ?: return) }
-    }
-
-    /** Горизонтальный ряд круглых свотчей; выбранный — белая обводка. */
-    private fun buildPaletteRow(root: View?) {
-        val row = root?.findViewById<android.widget.LinearLayout>(R.id.paletteRow) ?: return
-        row.removeAllViews()
-        val d = resources.displayMetrics.density
-        val sizeDp = 48f
-        val marginDp = 10f
-        val cur = com.vwshell.auto.core.PaletteManager.currentPresetIndex()
-        com.vwshell.auto.core.PaletteManager.presets.forEachIndexed { i, preset ->
-            val swatch = android.view.View(requireContext())
-            val lp = android.widget.LinearLayout.LayoutParams(
-                (sizeDp * d).toInt(), (sizeDp * d).toInt())
-            lp.setMargins((marginDp * d).toInt(), 0, (marginDp * d).toInt(), 0)
-            swatch.layoutParams = lp
-            val circle = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.OVAL
-                setColor(preset.hex)
-                if (i == cur) setStroke((3 * d).toInt(), 0xFFFFFFFF.toInt())
-            }
-            swatch.background = circle
-            swatch.contentDescription = getString(preset.nameRes)
-            swatch.setOnClickListener {
-                com.vwshell.auto.core.PaletteManager.setAccent(requireContext(), preset.hex)
-            }
-            row.addView(swatch)
-        }
-    }
-
-    override fun onDestroyView() {
-        com.vwshell.auto.core.PaletteManager.removeListener(paletteListener)
-        super.onDestroyView()
     }
 
     private fun openOrToast(action: () -> Boolean) {

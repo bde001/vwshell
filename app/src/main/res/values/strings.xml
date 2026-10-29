@@ -6,6 +6,7 @@
     <string name="tile_radio">Радио</string>
     <string name="tile_media">Медиа</string>
     <string name="tile_phone">Телефон</string>
+    <string name="tile_bluetooth">Bluetooth</string>
     <string name="tile_bluetooth_source">Bluetooth</string>
     <string name="tile_navigation">Навигация</string>
     <string name="tile_vehicle">Автомобиль</string>
@@ -138,6 +139,7 @@
 
     <!-- Медиа: доступ к уведомлениям -->
     <string name="media_need_access">Для определения активной медиасессии требуется доступ к уведомлениям (Notification Listener Access). Нажмите «Предоставить доступ» и включите VW Shell в списке системных слушателей, затем вернитесь сюда.</string>
+    <string name="media_grant_access">Предоставить доступ</string>
     <string name="media_settings_missing">Системный экран настроек доступа к уведомлениям недоступен на этой прошивке.</string>
     <string name="media_source_of">Источник: %1$s</string>
     <string name="media_action_unsupported">Текущий источник не поддерживает это действие</string>
@@ -157,6 +159,10 @@
 
     <!-- Настройки: новые группы -->
     <string name="settings_interface">Интерфейс</string>
+    <string name="settings_tile_layout">Сетка главного экрана</string>
+    <string name="settings_tile_spacing">Расстояние между плитками</string>
+    <string name="settings_tile_vertical_spacing">Высота плиток (меньше отступ — выше плитка)</string>
+    <string name="settings_tile_spacing_value">%1$d dp</string>
     <string name="settings_clock_format">Формат времени</string>
     <string name="settings_clock_24">24-часовой</string>
     <string name="settings_clock_12">12-часовой</string>
@@ -193,6 +199,7 @@
     <string name="media_external_title">Внешний источник</string>
     <string name="media_volume">Громкость</string>
     <string name="media_local_empty">Медиатека пуста. Скопируйте аудиофайлы в внутреннее хранилище магнитолы и нажмите «Обновить список».</string>
+    <string name="media_grant_audio">Доступ к аудио</string>
     <string name="media_rescan">Обновить список</string>
     <string name="vehicle_app_missing">Car Scanner ELM OBD2 не установлен. Открываем страницу установки.</string>
     <string name="home_hint_title">VW Shell как главный экран</string>
@@ -223,26 +230,4 @@
     <string name="app_no_sound_apps">Звуковые приложения не найдены</string>
     <string name="sys_settings_missing">Системные настройки недоступны</string>
     <string name="splash_logo_desc">Логотип Volkswagen</string>
-    <string name="perm_music_denied">Без разрешения музыка не работает</string>
-
-    <!-- Фича 3: палитра -->
-    <string name="settings_palette_section">Палитра</string>
-    <string name="palette_vw_red">VW Red</string>
-    <string name="palette_mib_blue">MIB Blue</string>
-    <string name="palette_emerald">Emerald</string>
-    <string name="palette_amber">Amber</string>
-    <string name="palette_violet">Violet</string>
-    <!-- Фича 1: BT-автопереключение -->
-    <string name="settings_bt_auto">Автопереключение источника по Bluetooth</string>
-    <!-- Фича 2: детектор тюнера -->
-    <string name="settings_rescan_tuner">Пересканировать тюнер</string>
-    <string name="radio_tuner_found">Тюнер найден: %1$s</string>
-    <string name="radio_ext_app_found">Найдено приложение радио: %1$s</string>
-    <string name="radio_stub_status">Тюнер не найден — демонстрационный режим</string>
-    <string name="tuner_native">NATIVE_TUNER</string>
-    <string name="tuner_external">EXTERNAL_APP</string>
-    <string name="tuner_stub">STUB</string>
-    <string name="on">Вкл.</string>
-    <string name="off">Выкл.</string>
-    <string name="ok">OK</string>
 </resources>

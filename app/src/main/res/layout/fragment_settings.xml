@@ -81,6 +81,19 @@
             </LinearLayout>
             <View style="@style/VW.Divider"/>
 
+            <!-- Настройка расстояния и высоты плиток главного экрана -->
+            <TextView style="@style/VW.SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingTop="20dp" android:paddingBottom="8dp" android:text="@string/settings_tile_layout"/>
+            <TextView android:id="@+id/tileSpacingLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/settings_tile_spacing" android:textColor="@color/vw_text_primary" android:textSize="@dimen/body_text"/>
+            <SeekBar android:id="@+id/tileSpacingSeek" android:layout_width="match_parent" android:layout_height="56dp"
+                android:max="20" android:progressTint="@color/vw_accent" android:thumbTint="@color/vw_accent"/>
+            <TextView android:id="@+id/tileVerticalSpacingLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/settings_tile_vertical_spacing" android:textColor="@color/vw_text_primary" android:textSize="@dimen/body_text"/>
+            <SeekBar android:id="@+id/tileVerticalSpacingSeek" android:layout_width="match_parent" android:layout_height="56dp"
+                android:max="18" android:progressTint="@color/vw_accent" android:thumbTint="@color/vw_accent"/>
+            <View style="@style/VW.Divider"/>
+
             <!-- Звук: раздел оболочки -->
             <LinearLayout android:id="@+id/rowSoundSection" style="@style/VW.SettingRow">
                 <ImageView style="@style/VW.SettingIcon" android:src="@drawable/ic_volume"/>
@@ -128,32 +141,7 @@
             </LinearLayout>
             <View style="@style/VW.Divider"/>
 
-            <!-- Фича 3: палитра лаунчера -->
-            <TextView style="@style/VW.SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:paddingTop="20dp" android:paddingBottom="8dp" android:text="@string/settings_palette_section"/>
-            <HorizontalScrollView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:scrollbars="none" android:paddingBottom="8dp">
-                <LinearLayout android:id="@+id/paletteRow"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:orientation="horizontal"/>
-            </HorizontalScrollView>
-
-            <!-- Фича 1: автопереключение BT -->
-            <LinearLayout android:id="@+id/rowBtAutoSwitch" style="@style/VW.SettingRow">
-                <ImageView style="@style/VW.SettingIcon" android:src="@drawable/ic_bluetooth"/>
-                <TextView style="@style/VW.SettingTitle" android:text="@string/settings_bt_auto"/>
-                <TextView android:id="@+id/valBtAuto" style="@style/VW.SettingValue"/>
-            </LinearLayout>
-            <View style="@style/VW.Divider"/>
-
-            <!-- Фича 2: пересканирование тюнера -->
-            <LinearLayout android:id="@+id/rowRescanTuner" style="@style/VW.SettingRow">
-                <ImageView style="@style/VW.SettingIcon" android:src="@drawable/ic_radio"/>
-                <TextView style="@style/VW.SettingTitle" android:text="@string/settings_rescan_tuner"/>
-                <TextView android:id="@+id/valTunerStatus" style="@style/VW.SettingValue"/>
-            </LinearLayout>
-            <View style="@style/VW.Divider"/>
-
+            <!-- Сброс настроек оболочки -->
             <LinearLayout android:id="@+id/rowResetShell" style="@style/VW.SettingRow">
                 <ImageView style="@style/VW.SettingIcon" android:src="@drawable/ic_back"/>
                 <TextView style="@style/VW.SettingTitle" android:text="@string/settings_reset"/>

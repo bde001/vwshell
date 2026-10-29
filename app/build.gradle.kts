@@ -23,10 +23,6 @@ android {
         ndk {
             abiFilters += listOf("armeabi-v7a", "arm64-v8a")
         }
-        // Векторные drawable через AppCompat — надёжно на урезанных стеках HU (API 26-30).
-        vectorDrawables {
-            useSupportLibrary = true
-        }
     }
 
     buildTypes {

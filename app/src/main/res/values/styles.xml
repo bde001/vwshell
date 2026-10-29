@@ -76,8 +76,7 @@
         <item name="android:layout_height">@dimen/control_button</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_marginEnd">8dp</item>
-        <!-- Круглая кнопка с градиентом VW (тот же набор цветов, что у плиток) -->
-        <item name="android:background">@drawable/bg_control_round</item>
+        <item name="android:background">@drawable/bg_tile</item>
         <item name="android:scaleType">centerInside</item>
         <item name="android:padding">14dp</item>
         <item name="tint">@color/vw_icon_tint</item>
@@ -86,9 +85,9 @@
     </style>
 
     <style name="VW.ControlButton.small">
-        <item name="android:layout_width">40dp</item>
-        <item name="android:layout_height">40dp</item>
-        <item name="android:padding">9dp</item>
+        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:padding">12dp</item>
     </style>
 
     <style name="VW.ControlButton.play">
@@ -177,22 +176,11 @@
         <item name="android:background">@drawable/bg_tile_slot</item>
     </style>
 
-    <style name="VW.RadioModeButton" parent="">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:orientation">vertical</item>
-        <item name="android:gravity">center</item>
-        <item name="android:paddingTop">12dp</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-        <item name="android:background">@drawable/bg_radio_mode</item>
-    </style>
-
     <style name="VW.Tile" parent="">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">0dp</item>
         <item name="android:layout_margin">@dimen/tile_gap</item>
+        <item name="android:background">@drawable/bg_tile</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
     </style>

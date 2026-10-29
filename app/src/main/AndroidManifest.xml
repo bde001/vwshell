@@ -7,9 +7,7 @@
       приложение работает без интернета, не содержит рекламы/аналитики/телеметрии.
     -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <!-- Фича 1: legacy-разрешение BT для HU на реальном API<=30 (maxSdkVersion, не избыточно);
-         BLUETOOTH_CONNECT — для getState()/receiver на API 31+ без SecurityException. -->
-    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <!-- Запрашиваются ТОЛЬКО при явном открытии разделов «Контакты» и «Журнал вызовов». -->
@@ -72,25 +70,12 @@
         -->
         <service
             android:name=".core.ShellNotificationListener"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-
-        <!--
-          Приёмник аппаратных медиа-кнопок (нужен для MediaSessionManager.getActiveSessions
-          с внешним компонентом — Bluetooth-медиасессии на HU). Никакого приёма A2DP Sink
-          здесь нет: receiver только логирует/маршрутизирует MEDIA_BUTTON.
-        -->
-        <receiver
-            android:name=".core.MediaButtonReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
     </application>
 </manifest>

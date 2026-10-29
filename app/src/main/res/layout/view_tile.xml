@@ -1,50 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center_horizontal">
-
-    <!-- Сама плитка с градиентным фоном -->
-    <FrameLayout
-        android:id="@+id/tileCard"
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:background="@drawable/tile_bg"
-        android:clickable="true"
-        android:focusable="true">
-
-        <ImageView
-            android:id="@+id/tileIcon"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_gravity="center"
-            app:tint="#e8eaed" />
-
-        <View
-            android:id="@+id/tileUnderline"
-            android:layout_width="match_parent"
-            android:layout_height="4dp"
-            android:layout_gravity="bottom"
-            android:background="@drawable/stripe_bottom_glow" />
-    </FrameLayout>
-
-    <!-- Надпись СТРОГО ПОД плиткой -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <ImageView
+        android:id="@+id/tileIcon"
+        android:layout_width="@dimen/tile_icon"
+        android:layout_height="@dimen/tile_icon"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="26dp"
+        android:contentDescription="@null"
+        app:tint="@color/vw_icon_tint"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        tools:src="@drawable/ic_radio" />
     <TextView
         android:id="@+id/tileLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:ellipsize="end"
-        android:letterSpacing="0.15"
-        android:shadowColor="#FF1A1A"
-        android:shadowDx="0"
-        android:shadowDy="0"
-        android:shadowRadius="4"
-        android:singleLine="true"
-        android:textAllCaps="true"
-        android:textColor="#e8eaed"
-        android:textSize="20sp"
-        android:textStyle="bold" />
-</LinearLayout>
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="28dp"
+        android:textColor="@color/vw_text_primary"
+        android:textSize="@dimen/tile_label"
+        android:letterSpacing="0.03"
+        tools:text="Радио" />
+    <View
+        android:id="@+id/tileUnderline"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tile_underline_h"
+        android:layout_gravity="bottom"
+        android:alpha="0.9"
+        android:background="@drawable/accent_line" />
+</merge>

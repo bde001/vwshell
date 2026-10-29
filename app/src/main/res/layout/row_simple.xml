@@ -16,16 +16,6 @@
     android:focusable="true"
     android:clickable="true">
 
-    <View
-        android:id="@+id/rowMarker"
-        android:layout_width="3dp"
-        android:layout_height="match_parent"
-        android:layout_marginTop="6dp"
-        android:layout_marginBottom="6dp"
-        android:layout_marginEnd="8dp"
-        android:background="#FF1A1A"
-        android:visibility="gone"/>
-
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"

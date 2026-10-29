@@ -20,7 +20,6 @@ class SimpleRowAdapter(
         val title: TextView = v.findViewById(R.id.rowTitle)
         val sub: TextView = v.findViewById(R.id.rowSub)
         val check: ImageView = v.findViewById(R.id.rowCheck)
-        val marker: View = v.findViewById(R.id.rowMarker)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
@@ -32,9 +31,6 @@ class SimpleRowAdapter(
         holder.sub.text = item.subtitle
         holder.sub.visibility = if (item.subtitle.isEmpty()) View.GONE else View.VISIBLE
         holder.check.visibility = if (item.checked) View.VISIBLE else View.GONE
-        // Текущий элемент списка: красная полоска border-left 3dp в цвете палитры (Фича 3)
-        holder.marker.visibility = if (item.checked) View.VISIBLE else View.GONE
-        holder.marker.setBackgroundColor(com.vwshell.auto.core.PaletteManager.accent())
         holder.itemView.setOnClickListener { onClick?.invoke(item) }
     }
 

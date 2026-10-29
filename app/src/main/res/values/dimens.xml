@@ -2,14 +2,14 @@
 <resources>
     <!-- Базовые размеры оптимизированы под 1280x720 (land, ~200dpi) и масштабируются через sw/sizes -->
     <dimen name="screen_padding">20dp</dimen>
-    <dimen name="topbar_height">56dp</dimen>
+    <dimen name="topbar_height">72dp</dimen>
     <dimen name="bottombar_height">64dp</dimen>
     <dimen name="accent_line">2dp</dimen>
 
     <dimen name="clock_text">26sp</dimen>
     <dimen name="title_text">20sp</dimen>
-    <dimen name="tile_icon">44dp</dimen>
-    <dimen name="tile_label">16sp</dimen>
+    <dimen name="tile_icon">52dp</dimen>
+    <dimen name="tile_label">18sp</dimen>
     <dimen name="tile_underline_w">36dp</dimen>
     <dimen name="tile_underline_h">3dp</dimen>
     <dimen name="tile_gap">10dp</dimen>
@@ -20,10 +20,10 @@
     <dimen name="body_text">16sp</dimen>
     <dimen name="small_text">13sp</dimen>
     <dimen name="button_height">56dp</dimen>
-    <dimen name="control_button">64dp</dimen>
-    <dimen name="dial_button">72dp</dimen>
+    <dimen name="control_button">72dp</dimen>
+    <dimen name="dial_button">80dp</dimen>
     <dimen name="section_gap">16dp</dimen>
-    <dimen name="list_row_height">64dp</dimen>
+    <dimen name="list_row_height">72dp</dimen>
     <dimen name="icon_sm">24dp</dimen>
     <dimen name="icon_md">32dp</dimen>
 </resources>

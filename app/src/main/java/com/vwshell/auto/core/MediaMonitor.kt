@@ -87,7 +87,15 @@ class MediaMonitor private constructor(context: Context) {
                 refreshPending.set(false)
                 mainHandler.post {
                     if (sessions != null) {
-                        val active = sessions.firstOrNull { it.playbackState?.state != PlaybackState.STATE_NONE }
+                        // Prefer the session that is actually playing and exposes track metadata;
+                        // OEM Bluetooth stacks often publish an extra, empty system session first.
+                        val active = sessions.firstOrNull {
+                            val state = it.playbackState?.state
+                            val title = runCatching { it.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE) }.getOrNull()
+                            (state == PlaybackState.STATE_PLAYING || state == PlaybackState.STATE_BUFFERING) && !title.isNullOrBlank()
+                        } ?: sessions.firstOrNull {
+                            !runCatching { it.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE) }.getOrNull().isNullOrBlank()
+                        } ?: sessions.firstOrNull { it.playbackState?.state != PlaybackState.STATE_NONE }
                             ?: sessions.firstOrNull()
                         attachController(active)
                     } else {
@@ -110,14 +118,12 @@ class MediaMonitor private constructor(context: Context) {
         if (currentController === c) return
         currentController?.unregisterCallback(stateCallback)
         currentController = c
-        activeToken = c?.sessionToken
         c?.registerCallback(stateCallback)
     }
 
     private fun detachController() {
         currentController?.unregisterCallback(stateCallback)
         currentController = null
-        activeToken = null
     }
 
     private fun dispatch() {
@@ -151,21 +157,6 @@ class MediaMonitor private constructor(context: Context) {
         private const val DEFAULT_COMP_SUFFIX = "com.vwshell.auto.core.ShellNotificationListener"
 
         private fun componentNames(context: Context) =
-            listOf(ComponentName(context, MediaButtonReceiver::class.java))
-
-        /** Токен активной внешней медиасессии (для маршрутизации MEDIA_BUTTON). */
-        @Volatile var activeToken: android.media.session.MediaSession.Token? = null
-
-        fun activeSessionToken(context: Context): android.media.session.MediaSession.Token? {
-            val t = activeToken ?: return null
-            // Проверяем, что токен принадлежит сессии, видимой нашему receiver-компоненту.
-            return runCatching {
-                val mgr = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
-                if (mgr != null) {
-                    val self = componentNames(context)[0]
-                    if (mgr.getActiveSessions(self).any { it.sessionToken == t }) t else null
-                } else null
-            }.getOrNull()
-        }
+            listOf(ComponentName(context, ShellNotificationListener::class.java))
     }
 }
