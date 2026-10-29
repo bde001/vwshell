@@ -224,6 +224,7 @@
     <string name="tile_appconnect">AppConnect</string>
     <string name="page2_apps">Приложения</string>
     <string name="page2_sys_settings">Настройки системы</string>
+    <string name="app_pick_vehicle">Выберите приложение диагностики автомобиля</string>
     <string name="app_pick_appconnect">Выберите приложение AppConnect</string>
     <string name="app_pick_sound">Выберите звуковое приложение</string>
     <string name="app_none_available">Приложения для выбора не найдены</string>

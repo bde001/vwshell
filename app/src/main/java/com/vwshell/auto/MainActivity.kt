@@ -250,6 +250,42 @@ class MainActivity : AppCompatActivity(), ShellState.Listener, BaseSectionHeader
         )
     }
 
+    /** Выбор диагностического приложения для плитки «Автомобиль». */
+    private fun showVehicleAppChooser() {
+        showAppChooser(
+            titleRes = R.string.app_pick_vehicle,
+            emptyRes = R.string.app_none_available,
+            setSaved = { Prefs.get(this).vehicleAppPackage = it },
+            appListProvider = { AppLauncher.diagnosticApps(this) },
+        )
+    }
+
+    /** Запускает выбранный диагностический пакет, затем Car Scanner Free/Pro. */
+    private fun launchVehicleApp() {
+        val prefs = Prefs.get(this)
+        if (AppLauncher.launchCarScanner(this, prefs.vehicleAppPackage)) return
+
+        // Если Car Scanner не установлен, предлагаем реально найденные диагностические приложения.
+        val candidates = AppLauncher.diagnosticApps(this)
+        if (candidates.isNotEmpty()) {
+            showVehicleAppChooser()
+        } else {
+            AppLauncher.openInstallPage(this, AppLauncher.CAR_SCANNER_FREE)
+        }
+    }
+
+    /** Совместимый fallback для медиасессий, которые реагируют на media-button события. */
+    private fun dispatchMediaKey(
+        controller: android.media.session.MediaController,
+        keyCode: Int,
+    ): Boolean = try {
+        val down = controller.dispatchMediaButtonEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode))
+        val up = controller.dispatchMediaButtonEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+        down || up
+    } catch (_: Exception) {
+        false
+    }
+
     /** Диалог смены выбранного приложения (долгое нажатие на плитку). */
     private fun showAppChooser(
         titleRes: Int,
